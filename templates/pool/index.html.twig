@@ -1,0 +1,54 @@
+<h1>Pools</h1>
+
+<a href="{{ path('pool_new') }}">Create new</a>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Drivers</th>
+        <th>Priority</th>
+        <th>Points</th>
+        <th>actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for pool in pools %}
+        <tr>
+            <td>{{ pool.name }}</td>
+            <td>
+                <ul>
+                {% for driver in pool.drivers %}
+                    <li>{{ driver.psn }}</li>
+                {% endfor %}
+                </ul>
+            </td>
+            <td>{{ pool.priority }}</td>
+            <td>
+            <table class="table table-striped">
+                <tr>
+                    <th>position</th>
+                    {% for position, points in pool.points %}
+                    <th>{{ position+1 }}</th>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <th>points</th>
+                    {% for position, points in pool.points %}
+                    <td>{{ points }}</td>
+                    {% endfor %}
+                </tr>
+            </table>
+            </td>
+            <td>
+                <a href="{{ path('pool_show', {'id': pool.id}) }}">show</a>
+                <a href="{{ path('pool_edit', {'id': pool.id}) }}">edit</a>
+            </td>
+        </tr>
+    {% else %}
+        <tr>
+            <td colspan="4">no records found</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+

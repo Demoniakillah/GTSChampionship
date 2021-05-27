@@ -1,0 +1,32 @@
+<h1>Races Configuration</h1>
+
+<a href="{{ path('race_configuration_new') }}">Create new</a>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Parameter</th>
+        <th>Value</th>
+        <th>actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for race in races %}
+        <tr><th colspan="3">{{ race.name }}</th></tr>
+        {% for race_configuration in race.configurations %}
+            <tr>
+                <td>{{ race_configuration.parameter }}</td>
+                <td>{{ race_configuration | configurationValue }}</td>
+                <td>
+                    <a href="{{ path('race_configuration_show', {'id': race_configuration.id}) }}">show</a>
+                    <a href="{{ path('race_configuration_edit', {'id': race_configuration.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">no records found</td>
+            </tr>
+        {% endfor %}
+    {% endfor %}
+    </tbody>
+</table>
+

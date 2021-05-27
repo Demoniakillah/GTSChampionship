@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Driver Race Inscription{% endblock %}
+
+{% block body %}
+    <h1>Driver Race Inscription</h1>
+
+    <table class="table table-striped">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ driver_race.id }}</td>
+            </tr>
+            <tr>
+                <th>TotalTime</th>
+                <td>{{ driver_race.totalTime }}</td>
+            </tr>
+            <tr>
+                <th>BestLap</th>
+                <td>{{ driver_race.bestLap }}</td>
+            </tr>
+            <tr>
+                <th>StartPosition</th>
+                <td>{{ driver_race.startPosition }}</td>
+            </tr>
+            <tr>
+                <th>FinishStatus</th>
+                <td>{{ driver_race.finishStatus }}</td>
+            </tr>
+            <tr>
+                <th>Bonus</th>
+                <td>{{ driver_race.bonus }}</td>
+            </tr>
+            <tr>
+                <th>Penalty</th>
+                <td>{{ driver_race.penalty }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('driver_race_index') }}">back to list</a>
+
+    <a href="{{ path('driver_race_edit', {'id': driver_race.id}) }}">edit</a>
+
+    {{ include('driver_race/_delete_form.html.twig') }}
+{% endblock %}

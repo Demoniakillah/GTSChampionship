@@ -23,9 +23,59 @@ class Menu
     private $label;
 
     /**
+     * @var string
      * @ORM\Column(type="string", length=255)
      */
+    private $route;
+
+    /**
+     * @var string
+     */
     private $url;
+
+    /**
+     * @var string
+     * @ORM\Column(type="string", length=255)
+     */
+    private $role = 'ROLE_USER';
+
+    /**
+     * @return string
+     */
+    public function getRole(): string
+    {
+        return $this->role;
+    }
+
+    /**
+     * @param string $role
+     * @return Menu
+     */
+    public function setRole(string $role): Menu
+    {
+        $this->role = $role;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRoute(): string
+    {
+        return $this->route;
+    }
+
+    /**
+     * @param string $route
+     * @return Menu
+     */
+    public function setRoute(string $route): Menu
+    {
+        $this->route = $route;
+
+        return $this;
+    }
 
     public function getId(): ?int
     {

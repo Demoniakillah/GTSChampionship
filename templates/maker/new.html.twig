@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Maker{% endblock %}
+
+{% block body %}
+    <h1>Create new Maker</h1>
+
+    {{ include('maker/_form.html.twig') }}
+
+    <a href="{{ path('maker_index') }}">back to list</a>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Driver Race Inscription{% endblock %}
+
+{% block body %}
+    <h1>Edit Driver Race Inscription</h1>
+
+    {{ include('driver_race/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('driver_race_index') }}">back to list</a>
+
+    {{ include('driver_race/_delete_form.html.twig') }}
+{% endblock %}

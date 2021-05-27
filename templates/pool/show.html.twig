@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Pool{% endblock %}
+
+{% block body %}
+    <h1>Pool</h1>
+
+    <table class="table table-striped">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ pool.id }}</td>
+            </tr>
+            <tr>
+                <th>Name</th>
+                <td>{{ pool.name }}</td>
+            </tr>
+            <tr>
+                <th>Drivers</th>
+                <td>
+                    <ul>
+                        {% for driver in pool.drivers %}
+                            <li>{{ driver.psn }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <th>Points</th>
+                <td>
+                    <table class="table table-striped">
+                        <tr>
+                            <th>position</th>
+                            {% for position, points in pool.points %}
+                                <th>{{ position+1 }}</th>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <th>points</th>
+                            {% for position, points in pool.points %}
+                                <td>{{ points }}</td>
+                            {% endfor %}
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('pool_index') }}">back to list</a>
+
+    <a href="{{ path('pool_edit', {'id': pool.id}) }}">edit</a>
+
+    {{ include('pool/_delete_form.html.twig') }}
+{% endblock %}

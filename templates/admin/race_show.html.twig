@@ -1,0 +1,95 @@
+<h1>{{ race.name }}</h1>
+<h2 class="countdown"
+    data-year="{{ race.date ? race.date|date('Y') : '' }}"
+    data-month="{{ race.date ? race.date|date('m') : '' }}"
+    data-day="{{ race.date ? race.date|date('d') : '' }}"
+    data-hour="{{ race.date ? race.date|date('H') : '' }}"
+    data-minute="{{ race.date ? race.date|date('i') : '' }}"></h2>
+<table class="table table-striped">
+    <tbody>
+    <tr>
+        <th>Date</th>
+        <td>{{ race.date ? race.date|date('Y-m-d H:i:s') : '' }}</td>
+    </tr>
+    <tr>
+        <th>Casting</th>
+        <td>{{ race.casting }}</td>
+    </tr>
+    <tr>
+        <th>Host</th>
+        <td>{{ race.host }}</td>
+    </tr>
+    <tr>
+        <th>Livery</th>
+        <td>{{ race.livery }}</td>
+    </tr>
+    <tr>
+        <th>Track</th>
+        <td>{{ race.track.country.name ?? '' }} {{ race.track.name ?? '' }}</td>
+    </tr>
+    <tr>
+        <th>More details</th>
+        <td>{{ race.moreDetails }}</td>
+    </tr>
+    <tr>
+        <th>Cars</th>
+        <td>
+            <ul>
+                {% for car in race.cars %}
+                    <li>
+                        {{ car.name }}
+                        <ul>
+                            {% for carConfiguration in race.carConfigurations %}
+                                {% if carConfiguration.car.id == car.id %}
+                                    <li><i>{{ carConfiguration.parameter }} : {{ carConfiguration.value }}{{ carConfiguration.parameter.unity }}</i></li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% else %}
+                    no cars defined
+                {% endfor %}
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <th>Registered drivers</th>
+        <td class="row">
+            {% for poolData in inscriptions %}
+            <div class="col">
+                <table class="table table-striped">
+                    <thead>
+                    <tr><th>pool: {{ poolData.pool ?? 'no pool' }}</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for driver in poolData.drivers %}
+                        <tr>
+                            <td>{{ driver }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td>empty</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endfor %}
+        </td>
+    </tr>
+    <tr>
+        <th>Parameters</th>
+        <td>
+            <ul>
+                {% for configuration in race.configurations %}
+                    <li>{{ configuration.parameter }} : {{ configuration | configurationValue }}</li>
+                {% endfor %}
+            </ul>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<script>
+    $(document).ready(function () {
+        countdown()
+    })
+</script>

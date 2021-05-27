@@ -1,0 +1,35 @@
+<h1>Driver</h1>
+
+<a href="{{ path('driver_new') }}">Create new</a>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Psn</th>
+        <th>Name</th>
+        <th>Team</th>
+        <th>Pool</th>
+        <th>actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for driver in drivers %}
+        <tr>
+            <td>{{ driver.id }}</td>
+            <td>{{ driver.psn }}</td>
+            <td>{{ driver.name }}</td>
+            <td>{% if driver.team is not null %}{{ driver.team.name }}{% endif %}</td>
+            <td>{% if driver.pool is not null %}{{ driver.pool.name }}{% endif %}</td>
+            <td>
+                <a href="{{ path('driver_show', {'id': driver.id}) }}">show</a>
+                <a href="{{ path('driver_edit', {'id': driver.id}) }}">edit</a>
+            </td>
+        </tr>
+    {% else %}
+        <tr>
+            <td colspan="4">no records found</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+

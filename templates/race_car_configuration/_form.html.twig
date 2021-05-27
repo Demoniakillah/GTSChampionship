@@ -1,0 +1,13 @@
+{{ form_start(form) }}
+    {{ form_widget(form) }}
+    <button class="btn">{{ button_label|default('Save') }}</button>
+{{ form_end(form) }}
+
+<script>
+    $(document).ready(function () {
+        $('#race_car_configuration_race').on('change', function () {
+            updateRaceCarList($('#race_car_configuration_race'),$('#race_car_configuration_car'),{race:$('#race_car_configuration_race').val(),configuration: "{{ race_car_configuration.id }}"})
+        })
+        updateRaceCarList($('#race_car_configuration_race'),$('#race_car_configuration_car'),{race:$('#race_car_configuration_race').val(),configuration: "{{ race_car_configuration.id }}"})
+    })
+</script>

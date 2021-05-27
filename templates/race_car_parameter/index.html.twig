@@ -1,0 +1,29 @@
+    <h1>RaceCarParameter index</h1>
+
+    <a href="{{ path('race_car_parameter_new') }}">Create new</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for race_car_parameter in race_car_parameters %}
+            <tr>
+                <td>{{ race_car_parameter.id }}</td>
+                <td>{{ race_car_parameter.name }}</td>
+                <td>
+                    <a href="{{ path('race_car_parameter_show', {'id': race_car_parameter.id}) }}">show</a>
+                    <a href="{{ path('race_car_parameter_edit', {'id': race_car_parameter.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+

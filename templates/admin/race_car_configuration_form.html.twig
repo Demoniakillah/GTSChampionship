@@ -1,0 +1,10 @@
+<h3>Race Car Configuration</h3>
+
+<span id="race_and_car_idx" data-race="{{ race }}" data-car="{{ car }}"></span>
+{% for parameterId, data in configurations %}
+    <div class="form-group">
+        <label> {{ data.parameter }} ({{ data.unity }})
+            <input data-parameter="{{ parameterId }}" type="number" class="form-control race_configuration_input" value="{{ data.configuration ?? '' }}">
+        </label>
+    </div>
+{% endfor %}

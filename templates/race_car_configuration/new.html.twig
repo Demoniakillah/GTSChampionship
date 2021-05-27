@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Race Car Configuration{% endblock %}
+
+{% block body %}
+    <h1>Create new Race Car Configuration</h1>
+
+    {{ include('race_car_configuration/_form.html.twig') }}
+
+    <a href="{{ path('race_car_configuration_index') }}">back to list</a>
+{% endblock %}

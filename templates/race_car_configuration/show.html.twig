@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}RaceCarConfiguration{% endblock %}
+
+{% block body %}
+    <h1>RaceCarConfiguration</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ race_car_configuration.id }}</td>
+            </tr>
+            <tr>
+                <th>Value</th>
+                <td>{{ race_car_configuration.value }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('race_car_configuration_index') }}">back to list</a>
+
+    <a href="{{ path('race_car_configuration_edit', {'id': race_car_configuration.id}) }}">edit</a>
+
+    {{ include('race_car_configuration/_delete_form.html.twig') }}
+{% endblock %}

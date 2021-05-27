@@ -1,0 +1,29 @@
+<h1>Car Maker</h1>
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for maker in makers %}
+        <tr>
+            <td>{{ maker.id }}</td>
+            <td>{{ maker.name }}</td>
+            <td>
+                <a href="{{ path('maker_show', {'id': maker.id}) }}">show</a>
+                <a href="{{ path('maker_edit', {'id': maker.id}) }}">edit</a>
+            </td>
+        </tr>
+    {% else %}
+        <tr>
+            <td colspan="3">no records found</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<a href="{{ path('maker_new') }}">Create new</a>

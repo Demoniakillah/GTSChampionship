@@ -7,6 +7,12 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass=TrackRepository::class)
+ * @ORM\Table(uniqueConstraints={
+ *          @ORM\UniqueConstraint(
+ *              name="country_tracks_idx",
+ *              columns={"country","name"}
+ *          )
+ *     })
  */
 class Track
 {
@@ -28,6 +34,11 @@ class Track
      * @ORM\Column(type="string", length=255)
      */
     private $name;
+
+    public function __toString():string
+    {
+        return $this->country->getName() . ' ' . $this->name;
+    }
 
     /**
      * @return Country

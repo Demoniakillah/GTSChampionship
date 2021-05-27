@@ -1,0 +1,48 @@
+<h1>Driver Race Inscription</h1>
+
+<a href="{{ path('driver_race_new') }}">Create new</a>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>PSN</th>
+        <th>Event</th>
+        <th>Pool</th>
+        <th>Car</th>
+        <th>TotalTime</th>
+        <th>BestLap</th>
+        <th>StartPosition</th>
+        <th>FinishStatus</th>
+        <th>Bonus</th>
+        <th>Penalty</th>
+        <th>actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for pool, driver_races in pools %}
+        <tr><th colspan="11">Pool: {{ pool }}</th></tr>
+        {% for driver_race in driver_races %}
+            <tr>
+                <td>{{ driver_race.driver ?? '' }}</td>
+                <td>{{ driver_race.race ?? '' }}</td>
+                <td>{{ driver_race.pool.name ?? '' }}</td>
+                <td>{{ driver_race.car.maker ?? '' }} - {{ driver_race.car ?? '' }}</td>
+                <td>{{ driver_race.totalTime }}</td>
+                <td>{{ driver_race.bestLap }}</td>
+                <td>{{ driver_race.startPosition }}</td>
+                <td>{{ driver_race.finishStatus }}</td>
+                <td>{{ driver_race.bonus }}</td>
+                <td>{{ driver_race.penalty }}</td>
+                <td>
+                    <a href="{{ path('driver_race_show', {'id': driver_race.id}) }}">show</a>
+                    <a href="{{ path('driver_race_edit', {'id': driver_race.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="8">no records found</td>
+            </tr>
+        {% endfor %}
+    {% endfor %}
+    </tbody>
+</table>
+

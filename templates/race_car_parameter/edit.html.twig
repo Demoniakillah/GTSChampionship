@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit RaceCarParameter{% endblock %}
+
+{% block body %}
+    <h1>Edit RaceCarParameter</h1>
+
+    {{ include('race_car_parameter/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('race_car_parameter_index') }}">back to list</a>
+
+    {{ include('race_car_parameter/_delete_form.html.twig') }}
+{% endblock %}

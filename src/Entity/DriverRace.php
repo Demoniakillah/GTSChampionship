@@ -7,11 +7,26 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass=DriverRaceRepository::class)
+ * @ORM\Table(uniqueConstraints={
+ *          @ORM\UniqueConstraint(
+ *              name="driver_race_idx",
+ *              columns={"driver","race"}
+ *          )
+ *     })
  */
 class DriverRace
 {
+    /**
+     *
+     */
     public const FINISHED = 0;
-    public const DISCONECTED = 1;
+    /**
+     *
+     */
+    public const DISCONNECTED = 1;
+    /**
+     *
+     */
     public const MISSING = 2;
 
     /**
@@ -39,6 +54,11 @@ class DriverRace
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
+    private $finishPosition;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
     private $finishStatus = self::FINISHED;
 
     /**
@@ -60,7 +80,7 @@ class DriverRace
 
     /**
      * @var Driver
-     * @ORM\ManyToOne(targetEntity="App\Entity\Driver", inversedBy="races")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Driver", inversedBy="drivers")
      * @ORM\JoinColumn(name="driver", referencedColumnName="id")
      */
     private $driver;
@@ -73,9 +93,24 @@ class DriverRace
     private $car;
 
     /**
+     * @var Race
+     * @ORM\ManyToOne(targetEntity="App\Entity\Race", inversedBy="driverRaces")
+     * @ORM\JoinColumn(name="race", referencedColumnName="id", onDelete="CASCADE")
+     */
+    private $race;
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->driver->getPsn();
+    }
+
+    /**
      * @return Pool
      */
-    public function getPool(): Pool
+    public function getPool(): ?Pool
     {
         return $this->pool;
     }
@@ -83,7 +118,7 @@ class DriverRace
     /**
      * @return Car
      */
-    public function getCar(): Car
+    public function getCar(): ?Car
     {
         return $this->car;
     }
@@ -100,10 +135,10 @@ class DriverRace
     }
 
     /**
-     * @param Pool $pool
+     * @param Pool|null $pool
      * @return DriverRace
      */
-    public function setPool(Pool $pool): DriverRace
+    public function setPool(Pool $pool = null): DriverRace
     {
         $this->pool = $pool;
 
@@ -113,7 +148,7 @@ class DriverRace
     /**
      * @return Driver
      */
-    public function getDriver(): Driver
+    public function getDriver(): ?Driver
     {
         return $this->driver;
     }
@@ -132,7 +167,7 @@ class DriverRace
     /**
      * @return Race
      */
-    public function getRace(): Race
+    public function getRace(): ?Race
     {
         return $this->race;
     }
@@ -149,44 +184,63 @@ class DriverRace
     }
 
     /**
-     * @var Race
+     * @return int|null
      */
-    private $race;
-
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getTotalTime(): ?string
     {
         return $this->totalTime;
     }
 
-    public function setTotalTime(?string $totalTime): self
+    /**
+     * @param string|null $totalTime
+     * @return $this
+     */
+    public function setTotalTime(?string $totalTime = '00:00:000'): self
     {
         $this->totalTime = $totalTime;
 
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getBestLap(): ?string
     {
         return $this->bestLap;
     }
 
-    public function setBestLap(?string $bestLap): self
+    /**
+     * @param string|null $bestLap
+     * @return $this
+     */
+    public function setBestLap(?string $bestLap = '00:00:000'): self
     {
         $this->bestLap = $bestLap;
 
         return $this;
     }
 
+    /**
+     * @return int|null
+     */
     public function getStartPosition(): ?int
     {
         return $this->startPosition;
     }
 
+    /**
+     * @param int|null $startPosition
+     * @return $this
+     */
     public function setStartPosition(?int $startPosition): self
     {
         $this->startPosition = $startPosition;
@@ -194,11 +248,18 @@ class DriverRace
         return $this;
     }
 
+    /**
+     * @return int|null
+     */
     public function getFinishStatus(): ?int
     {
         return $this->finishStatus;
     }
 
+    /**
+     * @param int|null $finishStatus
+     * @return $this
+     */
     public function setFinishStatus(?int $finishStatus): self
     {
         $this->finishStatus = $finishStatus;
@@ -206,11 +267,37 @@ class DriverRace
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getFinishPosition()
+    {
+        return $this->finishPosition;
+    }
+
+    /**
+     * @param mixed $finishPosition
+     * @return DriverRace
+     */
+    public function setFinishPosition($finishPosition)
+    {
+        $this->finishPosition = $finishPosition;
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
     public function getBonus(): ?int
     {
         return $this->bonus;
     }
 
+    /**
+     * @param int|null $bonus
+     * @return $this
+     */
     public function setBonus(?int $bonus): self
     {
         $this->bonus = $bonus;
@@ -218,11 +305,18 @@ class DriverRace
         return $this;
     }
 
+    /**
+     * @return int|null
+     */
     public function getPenalty(): ?int
     {
         return $this->penalty;
     }
 
+    /**
+     * @param int|null $penalty
+     * @return $this
+     */
     public function setPenalty(?int $penalty): self
     {
         $this->penalty = $penalty;

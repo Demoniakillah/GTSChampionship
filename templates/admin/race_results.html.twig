@@ -1,0 +1,102 @@
+{{ form_start(form) }}
+    {{ form_widget(form) }}
+{{ form_end(form) }}
+<input type="hidden" value="{{ race.id }}" id="race_id">
+<script>
+    $(document).ready(function () {
+        let table = document.createElement('table')
+        table.classList.add('table')
+        table.classList.add('table-striped')
+        let thead = document.createElement('thead')
+        let tr = document.createElement('tr')
+        $.each(['','pos','driver','pool','total','best lap','status','car','bonus','penalty'], function (i, title) {
+            let th = document.createElement('th')
+            th.append(title)
+            tr.append(th)
+        })
+        thead.append(tr)
+        table.append(thead)
+        let tbody = document.createElement('tbody')
+        $('#race_results_driverRaces').addClass('col')
+        $.each($('#race_results_driverRaces').children('div'), function (i, div) {
+            let tr = document.createElement('tr')
+            let id = $(div).find('input.driver_race_id').val()
+            $.each($(div).children('div').children('div'), function (j, childDiv) {
+                $(childDiv).children('label').remove()
+                $(childDiv).children('select').addClass('form-select')
+                if ($(childDiv).children('input').hasClass('hide')) {
+                    $(childDiv).children('input').attr('type', 'hidden')
+                }
+                if ($(childDiv).children('select,input').hasClass('hide_with_span')) {
+                    $(childDiv).children('select,input').attr('type', 'hidden')
+                    let span = document.createElement('span')
+                    span.append($(childDiv).children('select,input').val())
+                    $(childDiv).append(span)
+                    if ($(childDiv).children('select,input').hasClass('position')) {
+                        span.classList.add('position_span')
+                        $(span).text(i + 1)
+                    }
+                }
+                if ($(childDiv).children('select').hasClass('car_select')) {
+                    let postData = {inscription: id, race: $('#race_id').val()}
+                    updateRaceCarList($('#race_id'), $($(childDiv).children('select')), postData)
+                }
+                let td = document.createElement('td')
+                td.append(childDiv)
+                td.style.padding = '0px'
+                tr.append(td)
+            })
+            tbody.append(tr)
+        })
+        table.append(tbody)
+        $(tbody).sortable({
+            stop: function () {
+                update()
+            }
+        }).disableSelection()
+        $('.finishPosition').attr('disabled', 'disabled')
+        let updateButton = document.createElement('div')
+        updateButton.classList.add('col-12')
+        updateButton.classList.add('btn')
+        updateButton.classList.add('btn-primary')
+        updateButton.append('Update')
+        $(updateButton).on('click', function () {
+            update()
+            let dial = $.dialog({
+                title: '',
+                content: 'update done!',
+                onContentReady: function () {
+                    setTimeout(function () {
+                        dial.close()
+                    }, 1000)
+                }
+            })
+        })
+        $('#race_results_driverRaces').empty().append(table, updateButton)
+
+        function update() {
+            let data = []
+            $.each($(tbody).children('tr'), function (i, trSortable) {
+                $(trSortable).find('.position_span').text(i + 1)
+                $(trSortable).find('.position').val(i)
+                let tmp = {id: $(trSortable).find('input.driver_race_id').val(), data: {}}
+                $.each($(trSortable).find('input,select'), function (j, input) {
+                    let match = $(input).attr('id').match(/\d+_(.*)/)
+                    tmp['data'][match[1]] = $(input).val()
+                })
+                data.push(tmp)
+            })
+            $.post({
+                url: "{{ path('api_update_driver_race_finish_positions') }}",
+                data: {data: data},
+                dataType: 'json',
+                error: function (errorMsg) {
+                    $.alert({
+                        title: 'Error!',
+                        content: errorMsg.responseText
+                    })
+                }
+            })
+        }
+    })
+</script>

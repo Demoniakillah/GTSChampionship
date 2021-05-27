@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\RaceRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\PersistentCollection;
 
 /**
  * @ORM\Entity(repositoryClass=RaceRepository::class)
@@ -19,7 +20,7 @@ class Race
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      */
     private $name;
 
@@ -63,19 +64,105 @@ class Race
 
     /**
      * @var DriverRace[]
-     * @ORM\ManyToMany(targetEntity="App\Entity\DriverRace")
-     * @ORM\JoinTable(
-     *     name="race_drivers",
-     *     joinColumns={@ORM\JoinColumn(name="driver", referencedColumnName="id")},
-     *     inverseJoinColumns={@ORM\JoinColumn(name="race", referencedColumnName="id")}
-     * )
+     * @ORM\OneToMany(targetEntity="App\Entity\DriverRace", mappedBy="race", cascade={"remove"})
      */
-    private $drivers;
+    private $driverRaces;
+
+    /**
+     * @var RaceConfiguration[]
+     * @ORM\OneToMany(targetEntity="App\Entity\RaceConfiguration", mappedBy="race", cascade={"remove"})
+     */
+    private $configurations;
+
+    /**
+     * @var RaceCarConfiguration[]
+     * @ORM\OneToMany(targetEntity="App\Entity\RaceCarConfiguration", mappedBy="race", cascade={"remove"})
+     */
+    private $carConfigurations;
+
+    /**
+     * @var string
+     * @ORM\Column(name="more_details", type="text", nullable=true)
+     */
+    private $moreDetails;
+
+    public function __toString():string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMoreDetails(): ?string
+    {
+        return $this->moreDetails;
+    }
+
+    /**
+     * @param string $moreDetails
+     * @return Race
+     */
+    public function setMoreDetails(string $moreDetails): Race
+    {
+        $this->moreDetails = $moreDetails;
+
+        return $this;
+    }
+
+    /**
+     * @return RaceConfiguration[]
+     */
+    public function getConfigurations()
+    {
+        return $this->configurations;
+    }
+
+    /**
+     * @param RaceConfiguration[] $configurations
+     * @return Race
+     */
+    public function setConfigurations(array $configurations): Race
+    {
+        $this->configurations = $configurations;
+
+        return $this;
+    }
+
+    /**
+     * @return DriverRace[]
+     */
+    public function getDriverRaces()
+    {
+        return $this->driverRaces;
+    }
+
+    /**
+     * @param DriverRace[] $driverRaces
+     * @return Race
+     */
+    public function setDriverRaces(array $driverRaces): Race
+    {
+        $this->driverRaces = $driverRaces;
+
+        return $this;
+    }
+
+    /**
+     * @param RaceConfiguration $configuration
+     * @return Race
+     */
+    public function addConfiguration(RaceConfiguration $configuration): Race
+    {
+        $this->configurations[] = $configuration;
+
+        return $this;
+    }
 
     /**
      * @return Track
      */
-    public function getTrack(): Track
+    public function getTrack(): ?Track
     {
         return $this->track;
     }
@@ -83,7 +170,7 @@ class Race
     /**
      * @return Car[]
      */
-    public function getCars(): array
+    public function getCars()
     {
         return $this->cars;
     }
@@ -121,30 +208,13 @@ class Race
         return $this;
     }
 
-    /**
-     * @return DriverRace[]
-     */
-    public function getDrivers(): array
-    {
-        return $this->drivers;
-    }
-
-    /**
-     * @param DriverRace[] $drivers
-     * @return Race
-     */
-    public function setDrivers(array $drivers): Race
-    {
-        $this->drivers = $drivers;
-
-        return $this;
-    }
-
-
     public function __construct()
     {
         $this->cars = new ArrayCollection();
-        $this->drivers = new ArrayCollection();
+        $this->driverRaces = new ArrayCollection();
+        $this->configurations = new ArrayCollection();
+        $this->carConfigurations = new ArrayCollection();
+        $this->date = new \DateTime();
     }
 
     public function getId(): ?int
@@ -152,7 +222,26 @@ class Race
         return $this->id;
     }
 
-    public function getName(): ?string
+    /**
+     * @return RaceCarConfiguration[]
+     */
+    public function getCarConfigurations()
+    {
+        return $this->carConfigurations;
+    }
+
+    /**
+     * @param RaceCarConfiguration[] $carConfigurations
+     * @return Race
+     */
+    public function setCarConfigurations($carConfigurations): Race
+    {
+        $this->carConfigurations = $carConfigurations;
+
+        return $this;
+    }
+
+    public function getName(): string
     {
         return $this->name;
     }

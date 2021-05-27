@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New RaceParameter{% endblock %}
+
+{% block body %}
+    <h1>Create new RaceParameter</h1>
+
+    {{ include('race_parameter/_form.html.twig') }}
+
+    <a href="{{ path('race_parameter_index') }}">back to list</a>
+{% endblock %}

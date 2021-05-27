@@ -1,0 +1,33 @@
+<h1>Menu Items</h1>
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Label</th>
+        <th>Route</th>
+        <th>Role</th>
+        <th>actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for menu in menus %}
+        <tr>
+            <td>{{ menu.id }}</td>
+            <td>{{ menu.label }}</td>
+            <td>{{ menu.route }}</td>
+            <td>{{ menu.role }}</td>
+            <td>
+                <a href="{{ path('menu_show', {'id': menu.id}) }}">show</a>
+                <a href="{{ path('menu_edit', {'id': menu.id}) }}">edit</a>
+            </td>
+        </tr>
+    {% else %}
+        <tr>
+            <td colspan="5">no records found</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<a href="{{ path('menu_new') }}">Create new</a>

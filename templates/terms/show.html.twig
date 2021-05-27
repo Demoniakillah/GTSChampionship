@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Terms{% endblock %}
+
+{% block body %}
+    <h1>Terms</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ term.id }}</td>
+            </tr>
+            <tr>
+                <th>Text</th>
+                <td>{{ term.text }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('terms_index') }}">back to list</a>
+
+    <a href="{{ path('terms_edit', {'id': term.id}) }}">edit</a>
+
+    {{ include('terms/_delete_form.html.twig') }}
+{% endblock %}

@@ -1,0 +1,127 @@
+<h1>Pools ({{ pools | length }})</h1>
+<input type="hidden" id="max_driver_by_pool" value="{{ max_drivers }}">
+<a class="get_form_button btn btn-link text-primary" data-form_url="{{ path('admin_pool_new') }}">Create pool</a>
+<h3>Configuration</h3>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>name</th>
+        <th>priority</th>
+        <th>points table</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody class="pool_priority">
+    {% for pool in pools %}
+        <tr class="pool_data" data-pool="{{ pool.id }}">
+            <td>{{ pool.name }}</td>
+            <td>{{ pool.priority }}</td>
+            <td>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>positions</th>
+                        {% for points in pool.points %}
+                            <th>{{ loop.index }}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tr>
+                        <th>points</th>
+                        {% for points in pool.points %}
+                            <th>{{ points }}</th>
+                        {% endfor %}
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <a class="remove_element bi bi-trash text-danger" data-token="{{ csrf_token('delete'~pool.id) }}"
+                   style="float: right" data-remove_url="{{ path('pool_delete',{'id':pool.id}) }}"></a>
+
+                <a class="get_form_button bi bi-pencil-square text-success"
+                   data-token="{{ csrf_token('edit'~pool.id) }}"
+                   data-form_url="{{ path('admin_pool_edit',{'id':pool.id}) }}"></a>
+            </td>
+        </tr>
+    {% else %}
+        <tr>
+            <td><i>No entry</i></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<hr>
+<h3>Drivers</h3>
+<div class="row">
+    {% for id, poolData in drivers_by_pool %}
+        <div class="col">
+            <div style="font-size: 1.5rem">{{ poolData.pool ?? '<i>no pool</i>' }} (<span
+                        class="nb">{{ poolData.drivers | length }}</span>)
+            </div>
+            <table class="table table-striped">
+                <tbody data-pool="{{ id }}"
+                       class="pool_drivers {{ poolData.pool is defined ? 'has_pool' : 'has_no_pool' }}">
+                {% for driver in poolData.drivers %}
+                    <tr class="pool_update_info" data-driver="{{ driver.id }}">
+                        <td>{{ driver }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endfor %}
+</div>
+
+<script src="{{ asset('admin_form.js') }}"></script>
+<script>
+    $(document).ready(function () {
+        updateTableWithEmptyRow($('.pool_drivers'))
+        let max = parseInt($('#max_driver_by_pool').val())
+        let poolDriverSort = $('.pool_drivers').sortable({
+            connectWith: ".pool_drivers",
+            stop: function (e, ui) {
+                let tbody = $(ui.item).parent('tbody')
+                if (tbody.hasClass('has_pool') && tbody.children().length > max) {
+                    $.alert({
+                        title: '',
+                        content: "Max drivers by pool: " + max
+                    })
+                    poolDriverSort.sortable('cancel')
+                } else {
+                    let data = []
+                    $.each($('tr.pool_update_info'), function (i, tr) {
+                        data.push({pool: $(tr).parent('tbody').data('pool'), driver: $(tr).data('driver')})
+                    })
+                    $.post({
+                        url: "{{ path('api_update_drivers_pool') }}",
+                        data: {pool_drivers: data}
+                    })
+
+                    updateTableWithEmptyRow($('.pool_drivers'))
+                }
+            }
+        }).disableSelection()
+        let sortables = $('.pool_priority').sortable({
+            connectWith: ".pool_priority",
+            stop: function () {
+                let data = {pools: []}
+                $.each($('.pool_data'), function (priority, tbody) {
+                    data['pools'].push({id: $(tbody).data('pool'), priority: priority})
+                })
+                $.post({
+                    url: "{{ path('api_update_pool_priority') }}",
+                    data: data,
+                    success: function () {
+                        window.location.reload()
+                    },
+                    error: function (errorMsg) {
+                        $.alert({
+                            title: 'Error!',
+                            content: errorMsg.responseText
+                        })
+                    }
+                })
+            }
+        }).disableSelection()
+    })
+</script>

@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Pool{% endblock %}
+
+{% block body %}
+    <h1>Create new Pool</h1>
+
+    {{ include('pool/_form.html.twig') }}
+
+    <a href="{{ path('pool_index') }}">back to list</a>
+{% endblock %}

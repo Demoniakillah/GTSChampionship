@@ -1,0 +1,47 @@
+{{ form_start(form) }}
+    {{ form_widget(form) }}
+{% if removeButton is defined and removeButton == true %}
+    <input type="hidden" value="{{ form_action_url }}" id="form_action_url">
+{% else %}
+    <button class="btn">{{ button_label|default('Save') }}</button>
+{% endif %}
+{{ form_end(form) }}
+
+<script>
+    $(document).ready(() => {
+        $('#driver_race_race').on('change', function () {
+            updateRaceCarList($('#driver_race_race'),$('#driver_race_car'),{inscription: "{{ driver_race.id }}", race: $('#driver_race_race').val()})
+        })
+        $('#driver_race_driver').on('change', function () {
+            updateRaceDriverList()
+        })
+
+        function updateRaceDriverList(onLoad) {
+            if(!onLoad) {
+                $('#driver_race_driver').empty()
+                if ($('#driver_race_race').val() !== '') {
+                    $.post({
+                        url: "{{ path('api_get_race_drivers') }}",
+                        dataType: 'json',
+                        data: {inscription: "{{ driver_race.id }}", race: $('#driver_race_race').val()},
+                        success: function (drivers) {
+                            let selected = drivers.selected ?? false
+                            $.each(drivers, function (driverId, psn) {
+                                let option = document.createElement('option')
+                                option.value = driverId
+                                option.append(psn)
+                                if (selected === driverId) {
+                                    option.selected = true
+                                }
+                                $('#driver_race_driver').append(option)
+                            })
+                        }
+                    })
+                }
+            }
+        }
+
+        updateRaceCarList($('#driver_race_race'),$('#driver_race_car'),{inscription: "{{ driver_race.id }}", race: $('#driver_race_race').val()})
+        updateRaceDriverList(true)
+    })
+</script>

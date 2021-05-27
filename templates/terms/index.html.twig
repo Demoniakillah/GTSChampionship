@@ -1,0 +1,29 @@
+
+    <h1>Terms </h1>
+    <a href="{{ path('terms_new') }}">Create new</a>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Text</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for term in terms %}
+            <tr>
+                <td>{{ term.id }}</td>
+                <td>{{ term.text }}</td>
+                <td>
+                    <a href="{{ path('terms_show', {'id': term.id}) }}">show</a>
+                    <a href="{{ path('terms_edit', {'id': term.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>

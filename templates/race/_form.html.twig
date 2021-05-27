@@ -1,0 +1,21 @@
+{{ form_start(form) }}
+    {{ form_widget(form) }}
+{% if removeButton is defined and removeButton == true %}
+    <input type="hidden" value="{{ form_action_url }}" id="form_action_url">
+{% else %}
+    <button class="btn">{{ button_label|default('Save') }}</button>
+{% endif %}{{ form_end(form) }}
+
+<script>
+    $(document).ready(() => {
+        $.each($('select'), function () {
+            if ($(this).attr('id').match(/^race_date_date_(month|day|year)/)) {
+                $(this).css('width', '33%')
+            }
+            if ($(this).attr('id').match(/^race_date_time_(hour|minute)/)) {
+                $(this).css('width', '45%')
+            }
+            $(this).css('display', 'inline-block')
+        })
+    })
+</script>

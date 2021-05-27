@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\CountryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\PersistentCollection;
 
 /**
  * @ORM\Entity(repositoryClass=CountryRepository::class)
@@ -19,7 +20,7 @@ class Country
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      */
     private $name;
 
@@ -28,6 +29,11 @@ class Country
      * @ORM\OneToMany(targetEntity="App\Entity\Track", mappedBy="country")
      */
     private $tracks;
+
+    public function __toString():string
+    {
+       return $this->name;
+    }
 
     public function __construct()
     {
@@ -51,7 +57,10 @@ class Country
         return $this;
     }
 
-    public function getTracks(): array
+    /**
+     * @return Track[]
+     */
+    public function getTracks(): PersistentCollection
     {
         return $this->tracks;
     }

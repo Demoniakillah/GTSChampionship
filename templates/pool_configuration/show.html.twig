@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Pool Configuration{% endblock %}
+
+{% block body %}
+    <h1>Pool Configuration</h1>
+
+    <table class="table table-striped">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ pool_configuration.id }}</td>
+            </tr>
+            <tr>
+                <th>Name</th>
+                <td>{{ pool_configuration.name }}</td>
+            </tr>
+            <tr>
+                <th>Type</th>
+                <td>{{ pool_configuration.type }}</td>
+            </tr>
+            <tr>
+                <th>Value</th>
+                <td>{{ pool_configuration.value }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('pool_configuration_index') }}">back to list</a>
+
+    <a href="{{ path('pool_configuration_edit', {'id': pool_configuration.id}) }}">edit</a>
+
+    {{ include('pool_configuration/_delete_form.html.twig') }}
+{% endblock %}

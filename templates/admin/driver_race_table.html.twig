@@ -1,0 +1,28 @@
+<table class="table table-striped" style="border: 1px #198754 dotted">
+    <thead>
+    <tr>
+        <th>start position</th>
+        <th>psn</th>
+        <th>car</th>
+        <th>action</th>
+    </tr>
+    </thead>
+    <tbody class="driver_race_inscriptions driver_race_inscriptions_race_{{ data.race.id }} {% if pool.pool.id is not defined %}empty_pool{% endif %}"
+           data-connected="driver_race_inscriptions_race_{{ data.race.id }}" data-pool="{{ pool.pool.id ?? '' }}">
+    {% for inscription in inscriptions %}
+        <tr data-inscription="{{ inscription.id }}">
+            <td>{{ loop.index }}</td>
+            <td>{{ inscription.driver }}</td>
+            <td>{{ inscription.car }}</td>
+            <td>
+                <a class="get_form_button bi bi-pencil-square text-success no_reload"
+                   data-token="{{ csrf_token('edit'~inscription.id) }}"
+                   data-form_url="{{ path('admin_driver_race_edit',{'id':inscription.id}) }}"></a>
+                <a class="remove_element bi bi-trash text-danger" data-token="{{ csrf_token('delete'~inscription.id) }}"
+                   data-remove_url="{{ path('driver_race_delete',{'id':inscription.id}) }}"></a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+

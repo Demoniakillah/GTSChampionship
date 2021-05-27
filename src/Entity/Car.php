@@ -8,7 +8,12 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass=CarRepository::class)
- */
+ * @ORM\Table(uniqueConstraints={
+ *          @ORM\UniqueConstraint(
+ *              name="maker_cars_idx",
+ *              columns={"maker","name"}
+ *          )
+ *     }) */
 class Car
 {
     /**
@@ -35,6 +40,11 @@ class Car
      * @ORM\OneToMany(targetEntity="App\Entity\DriverRace", mappedBy="car")
      */
     private $races;
+
+    public function __toString():string
+    {
+        return $this->maker->getName() . ' ' . $this->name;
+    }
 
     public function __construct()
     {

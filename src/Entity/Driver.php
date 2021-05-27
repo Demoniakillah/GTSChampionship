@@ -19,7 +19,7 @@ class Driver
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      */
     private $psn;
 
@@ -31,22 +31,27 @@ class Driver
     /**
      * @var Team
      * @ORM\ManyToOne(targetEntity="App\Entity\Team", inversedBy="id")
-     * @ORM\JoinColumn(name="team", referencedColumnName="id")
+     * @ORM\JoinColumn(name="team", referencedColumnName="id", onDelete="SET NULL")
      */
     private $team;
 
     /**
      * @var Pool
      * @ORM\ManyToOne(targetEntity="App\Entity\Pool", inversedBy="drivers")
-     * @ORM\JoinColumn(name="pool",referencedColumnName="id")
+     * @ORM\JoinColumn(name="pool",referencedColumnName="id", onDelete="SET NULL")
      */
     private $pool;
 
     /**
      * @var DriverRace[]
-     * @ORM\OneToMany(targetEntity="App\Entity\DriverRace", mappedBy="driver")
+     * @ORM\OneToMany(targetEntity="App\Entity\DriverRace", mappedBy="driver", cascade={"remove"})
      */
     private $races;
+
+    public function __toString():string
+    {
+        return $this->psn;
+    }
 
     public function __construct()
     {
@@ -56,7 +61,7 @@ class Driver
     /**
      * @return DriverRace[]
      */
-    public function getRaces(): array
+    public function getRaces()
     {
         return $this->races;
     }
@@ -86,7 +91,7 @@ class Driver
     /**
      * @return Pool
      */
-    public function getPool(): Pool
+    public function getPool(): ?Pool
     {
         return $this->pool;
     }
@@ -94,7 +99,7 @@ class Driver
     /**
      * @param Pool $pool
      */
-    public function setPool(Pool $pool): self
+    public function setPool(?Pool $pool): self
     {
         $this->pool = $pool;
 
@@ -106,7 +111,7 @@ class Driver
         return $this->id;
     }
 
-    public function getPsn(): ?string
+    public function getPsn(): string
     {
         return $this->psn;
     }

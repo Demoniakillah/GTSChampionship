@@ -1,0 +1,60 @@
+<h1>Drivers race inscription</h1>
+<input type="hidden" value="{{ max_drivers }}" id="max_driver_by_pool">
+<a class="get_form_button btn btn-link text-primary" data-form_url="{{ form_url }}">Create new entry</a>
+{% for eventsStatus, events in {'Next events': driver_race_inscriptions.next, 'Passed events': driver_race_inscriptions.passed} %}
+    <div style="font-size: 1.8rem; text-align: center">{{ eventsStatus }}</div>
+    {% for data in events %}
+        {{ include('admin/driver_race_inscriptions.html.twig') }}
+    {% else %}
+        <i>No entry</i>
+    {% endfor %}
+    <hr>
+{% endfor %}
+<script src="{{ asset('admin_form.js') }}"></script>
+<script>
+    $(document).ready(function () {
+        updateTableWithEmptyRow($('.driver_race_inscriptions'))
+        let max = parseInt($('#max_driver_by_pool').val())
+        $.each($(".driver_race_inscriptions"), function (i, tbody) {
+            let connectionClass = $(tbody).data('connected')
+            $(tbody).sortable({
+                connectWith: "." + connectionClass,
+                receive: function(event, ui) {
+                    if ($(this).children().length > max && !$(ui.item).parent('tbody').hasClass('empty_pool')) {
+                        $.alert({
+                            title: '',
+                            content: 'Pool is full, max drivers: ' + max
+                        })
+                        $(ui.sender).sortable('cancel');
+                    }
+                },
+                stop: function () {
+                    updateTableWithEmptyRow($('.driver_race_inscriptions'))
+                    let data = {pools: {}}
+                    $.each($('.' + connectionClass), function (j, tbodyForData) {
+                        let pool = $(tbodyForData).data('pool');
+                        data['pools'][j] = {id: pool, inscriptions: []}
+                        $.each($(tbodyForData).children('tr').not('.empty_list'), function (position, trInscription) {
+                            $(trInscription).children('td:first').text(position + 1)
+                            data['pools'][j]['inscriptions'].push({
+                                position: position,
+                                inscription: $(trInscription).data('inscription')
+                            })
+                        })
+                    })
+                    $.post({
+                        url: "{{ path('api_update_driver_race_positions') }}",
+                        data: data,
+                        error: function (errorMsg) {
+                            $.alert({
+                                title: 'Error!',
+                                content: errorMsg.responseText
+                            })
+                        }
+                    })
+                }
+            }).disableSelection()
+        })
+        countdown()
+    })
+</script>

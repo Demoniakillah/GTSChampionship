@@ -1,0 +1,139 @@
+<h1>Races</h1>
+<a class="get_form_button btn btn-link text-primary" data-form_url="{{ form_url }}">Create new event</a>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Date</th>
+        <th>Countdown</th>
+        <th>Track</th>
+        <th>Cars</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <th colspan="6" style="text-align: center; font-size: 1.3rem; color: #198754">Next events</th>
+    </tr>
+    {% for race in races.next %}
+        {{ include('admin/race_table.html.twig') }}
+    {% else %}
+        <tr>
+            <td colspan="7">no records found</td>
+        </tr>
+    {% endfor %}
+    <tr>
+        <th colspan="6" style="text-align: center; font-size: 1.3rem; color: #999999"><i>Passed events</i></th>
+    </tr>
+    {% for race in races.passed %}
+        {{ include('admin/race_table.html.twig') }}
+    {% else %}
+        <tr>
+            <td colspan="7">no records found</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<script src="{{ asset('admin_form.js') }}"></script>
+<script>
+    $(document).ready(function () {
+        countdown()
+        $('.view').on('click', function () {
+            let url = $(this).data('url')
+            $.get({
+                url: url,
+                success: function (html) {
+                    $.dialog({
+                        title: '',
+                        content: html,
+                        useBootstrap: false,
+                        boxWidth: '100%',
+                        width: '100%',
+                    })
+                },
+                error: function (errorMsg) {
+                    $.alert({
+                        title: 'Error!',
+                        content: errorMsg.responseText
+                    })
+                }
+            })
+        })
+        $('.update_race_car_configuration').on('click', function () {
+            let race = $(this).data('race')
+            let car = $(this).data('car')
+            $.post({
+                url: "{{ path('api_get_race_car_configuration') }}",
+                data: {race: race, car: car},
+                error: function (errorMsg) {
+                    $.alert({
+                        title: 'Error!',
+                        content: errorMsg.responseText
+                    })
+                },
+                success: function (html) {
+                    $.confirm({
+                        title: '',
+                        content: html,
+                        useBoostrap: false,
+                        width: '100%',
+                        boxWidth: '100%',
+                        buttons: {
+                            save: {
+                                btnClass: 'btn-blue',
+                                action: function () {
+                                    let data = {
+                                        race: $("#race_and_car_idx").data('race'),
+                                        car: $("#race_and_car_idx").data('car')
+                                    }
+                                    $.each($('.race_configuration_input'), function (i, input) {
+                                        data['race_car_configuration_' + i] = {
+                                            parameter: $(input).data('parameter'),
+                                            value: $(input).val()
+                                        }
+                                    })
+                                    $.post({
+                                        url: "{{ path('api_update_race_car_configuration') }}",
+                                        data: data,
+                                        success: function () {
+                                            reloadContent()
+                                        },
+                                        error: function (errorMsg) {
+                                            $.alert({
+                                                title: 'Error!',
+                                                content: errorMsg.responseText
+                                            })
+                                        }
+                                    })
+                                }
+                            },
+                            cancel: {
+                                btnClass: 'btn-orange'
+                            }
+                        }
+                    })
+                }
+            })
+        })
+        $('.race_results').on('click', function () {
+            let url = $(this).data('result_table_url')
+            $.get({
+                url: url,
+                success: function (html) {
+                    $.confirm({
+                        title: '',
+                        content: html,
+                        useBootstrap: false,
+                        boxWidth: '100%',
+                        width: '100%',
+                        buttons:{
+                            close: {
+                                btnClass: 'btn-blue'
+                            }
+                        }
+                    })
+                }
+            })
+        })
+    })
+</script>

@@ -1,0 +1,27 @@
+<h1>Teams</h1>
+
+<a href="{{ path('team_new') }}">Create new</a>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for team in teams %}
+        <tr>
+            <td>{{ team.name }}</td>
+            <td>
+                <a href="{{ path('team_show', {'id': team.id}) }}">show</a>
+                <a href="{{ path('team_edit', {'id': team.id}) }}">edit</a>
+            </td>
+        </tr>
+    {% else %}
+        <tr>
+            <td colspan="3">no records found</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+

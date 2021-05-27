@@ -1,0 +1,65 @@
+<h1>Teams</h1>
+<a class="get_form_button btn btn-link text-primary" data-form_url="{{ path('admin_team_new') }}">Create team</a>
+<div class="row">
+    {% for id,team in teams %}
+        <div class="col-6" style="border: solid #999999 1px">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th class="text-primary">
+                        Team: {{ team.name ?? '<i>none</i>' }}
+                        {% if team.name is defined %}
+
+                            <a class="remove_element bi bi-trash text-danger" data-token="{{ csrf_token('delete'~id) }}"
+                               style="float: right" data-remove_url="{{ path('team_delete',{'id':id}) }}"></a>
+
+                            <a class="get_form_button bi bi-pencil-square text-success" data-token="{{ csrf_token('edit'~id) }}"
+                               data-form_url="{{ path('admin_team_edit',{'id':id}) }}"></a>
+
+                        {% endif %}
+                    </th>
+                </tr>
+                <tr>
+                    <th class="text-success">Drivers</th>
+                </tr>
+                </thead>
+                <tbody data-team="{{ id }}" class="drivers">
+                {% for driver in team.drivers %}
+                    <tr data-driver="{{ driver.id }}">
+                        <td>{{ driver }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endfor %}
+</div>
+
+<script src="{{ asset('admin_form.js') }}"></script>
+<script>
+    $(document).ready(() => {
+        updateTableWithEmptyRow($('.drivers'))
+        $(".drivers").sortable({
+            connectWith: ".drivers",
+            stop: function (e, ui) {
+                updateTableWithEmptyRow($('.drivers'))
+                let tr = $(ui.item)
+                if (!tr.hasClass('empty_list')) {
+                    let driver = tr.data('driver')
+                    let team = tr.parent('tbody').data('team')
+                    $.post({
+                        url: "{{ path('api_update_driver_team') }}",
+                        data: {driver: driver, team: team},
+                        dataType: 'json',
+                        error: function (errorMsg) {
+                            $.alert({
+                                title: 'Error!',
+                                content: errorMsg.responseText
+                            })
+                        }
+                    })
+                }
+            }
+        }).disableSelection();
+    })
+</script>

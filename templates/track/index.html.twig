@@ -1,0 +1,32 @@
+<h1>Tracks</h1>
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for country in countries %}
+        <tr>
+            <th colspan="2">{{ country }}</th>
+        </tr>
+        {% for track in country.tracks %}
+            <tr>
+                <td>{{ track.name }}</td>
+                <td>
+                    <a href="{{ path('track_show', {'id': track.id}) }}">show</a>
+                    <a href="{{ path('track_edit', {'id': track.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="2">no records found</td>
+            </tr>
+        {% endfor %}
+    {% endfor %}
+    </tbody>
+</table>
+
+<a href="{{ path('track_new') }}">Create new</a>

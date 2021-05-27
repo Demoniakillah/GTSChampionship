@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Pool Configuration{% endblock %}
+
+{% block body %}
+    <h1>Create new Pool Configuration</h1>
+
+    {{ include('pool_configuration/_form.html.twig') }}
+
+    <a href="{{ path('pool_configuration_index') }}">back to list</a>
+{% endblock %}

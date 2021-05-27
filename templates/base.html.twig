@@ -23,18 +23,220 @@
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css">
+    <style>
+        a {
+            cursor: pointer;
+        }
+    </style>
     {% block stylesheets %}{% endblock %}
     {% block javascripts %}{% endblock %}
 </head>
 <body>
-<div class="container">
+<div class="container-fluid">
     <h1 class="text-primary" style="text-align: center">GT Sport Champ</h1>
     <div class="row">
-        <div class="col-2" id="menu">
-
+        <div class="col-12" id="menu" style="border-right: solid 1px #999999"></div>
+        <div class="col-12" style="margin-top: 20px" id="content">
+            {% block body %}{% endblock %}
         </div>
-        <div class="col-10" id="content"></div>
     </div>
 </div>
+{% if is_granted('ROLE_ADMIN') %}
+    <script>
+        function updateRaceCarList(raceSelect, carSelect, postData) {
+            carSelect.empty()
+            if (raceSelect.val() !== '') {
+                $.post({
+                    url: "{{ path('api_get_race_cars') }}",
+                    dataType: 'json',
+                    data: postData,
+                    success: function (response) {
+                        let selected = response.selected ?? false
+                        $.each(response.list, function (maker, cars) {
+                            let optGroup = document.createElement('optgroup')
+                            optGroup.label = maker
+                            $.each(cars, function (name, id) {
+                                let option = document.createElement('option')
+                                option.value = id
+                                option.append(name)
+                                if(selected === id){
+                                    option.selected = true
+                                }
+                                optGroup.append(option)
+                                carSelect.append(optGroup)
+                            })
+                        })
+                    }
+                })
+            }
+        }
+
+        function reloadContent(menuItem = null) {
+            if (menuItem === null) {
+                let match = window.location.href.match(/#(.*)/)
+                if (match !== undefined) {
+                    menuItem = $(match[0])
+                }
+            }
+            if (menuItem !== null) {
+                let contentDiv = $('#content')
+                contentDiv.empty()
+                $.get({
+                    url: menuItem.data('url'),
+                    success: function (html) {
+                        contentDiv.hide().append(html).fadeIn()
+                        window.location.href = "#" + menuItem.attr('id')
+                    },
+                    error: function (errorMsg) {
+                        $.alert({
+                            title: 'Error!',
+                            content: errorMsg.responseText
+                        })
+                    }
+                })
+            }
+        }
+
+        function formatInput() {
+            $('select').addClass('form-select')
+            $('input').addClass('form-control')
+            let textarea = $('textarea');
+            textarea.css('display', 'block')
+            textarea.css('width', '100%')
+            textarea.attr('rows', '5')
+        }
+
+        function countdown() {
+            $.each($('.countdown'), function (i, element) {
+                if (
+                    element.hasAttribute('data-year') && $(element).data('year') !== '' &&
+                    element.hasAttribute('data-month') && $(element).data('month') !== '' &&
+                    element.hasAttribute('data-day') && $(element).data('day') !== '' &&
+                    element.hasAttribute('data-hour') && $(element).data('hour') !== '' &&
+                    element.hasAttribute('data-minute') && $(element).data('minute') !== ''
+                ) {
+                    const MINUTE = 60;
+                    const HOUR = MINUTE * 60;
+                    const DAY = HOUR * 24;
+                    let year = $(element).data('year')
+                    let month = $(element).data('month')
+                    let day = $(element).data('day')
+                    let hour = $(element).data('hour')
+                    let minute = $(element).data('minute')
+
+                    function refreshCountDown() {
+                        const EVENT_DATE = Date.parse(year + '-' + month + '-' + day + 'T' + hour + ':' + minute) / 1000
+                        const DIFFERENCE = EVENT_DATE - Date.now() / 1000
+                        if (DIFFERENCE < 0) {
+                            $(element).empty().text('Race in progress or finished')
+                            if (!$(element).hasClass('text-secondary')) {
+                                $(element).addClass('text-secondary')
+                                $(element).removeClass('text-danger')
+                            }
+                        } else {
+                            const DIFF = {
+                                days: Math.floor(DIFFERENCE / DAY),
+                                hours: Math.floor(DIFFERENCE % DAY / HOUR),
+                                minutes: Math.floor(DIFFERENCE % HOUR / MINUTE),
+                                seconds: Math.floor(DIFFERENCE % MINUTE)
+                            }
+                            if (
+                                DIFF.days === 0 &&
+                                DIFF.hours === 0 &&
+                                DIFF.minutes < 15
+                            ) {
+                                if (!$(element).hasClass('text-danger')) {
+                                    $(element).addClass('text-danger')
+                                }
+                            }
+                            let finalText = ''
+                            let dayText = DIFF.days + 'd '
+                            finalText += dayText
+                            let hourText = DIFF.hours + 'h '
+                            finalText += hourText
+                            let minuteText = DIFF.minutes + 'm '
+                            finalText += minuteText + ' and '
+                            let secondText = DIFF.seconds + 's'
+                            finalText += secondText
+                            $(element).text(finalText)
+                            setTimeout(() => {
+                                requestAnimationFrame(() => {
+                                    refreshCountDown()
+                                })
+                            }, 1000)
+                        }
+                    }
+
+                    refreshCountDown()
+                }
+            })
+
+        }
+
+        $(document).ready(() => {
+            formatInput();
+
+            function error() {
+                $.alert('Error!')
+            }
+
+            $.each($('a,button'), function (i, element) {
+                if ($(element).text().toLowerCase() === 'edit') {
+                    $(element).addClass('text-primary bi bi-pencil-square')
+                }
+                if ($(element).text().toLowerCase() === 'delete') {
+                    $(element).addClass('text-danger bi bi-trash')
+                }
+                if ($(element).text().toLowerCase() === 'update') {
+                    $(element).addClass('text-primary bi bi-pencil')
+                }
+                if ($(element).text().toLowerCase() === 'save') {
+                    $(element).addClass('text-primary bi bi-save')
+                }
+                if ($(element).text().toLowerCase() === 'Create new') {
+                    $(element).addClass('text-primary bi bi-save')
+                }
+                if ($(element).text().toLowerCase() === 'back to list') {
+                    $(element).remove()
+                }
+            })
+
+            function loadMenuItems() {
+                $.get({
+                    url: "{{ path('api_get_menu') }}",
+                    dataType: 'json',
+                    error: function () {
+                        error()
+                    },
+                    success: function (menuItems) {
+                        $.each(menuItems, function (id, item) {
+                            let div = document.createElement('div')
+                            div.id = item.id
+                            div.setAttribute('data-url', item.url)
+                            div.style.cursor = 'pointer'
+                            div.classList.add('btn')
+                            div.classList.add('btn-success')
+                            div.classList.add('menu_item')
+                            div.style.display = 'inline-block'
+                            div.style.marginRight = '20px'
+                            div.style.marginBottom = '20px'
+                            div.append(item.label.charAt(0).toUpperCase() + item.label.slice(1).replace('_', ' '))
+                            $('#menu').append(div)
+                            $(div).on('click', function () {
+                                reloadContent($(div));
+                            })
+                        })
+                        let matches = window.location.href.match(/#(.*)/)
+                        if (matches !== null) {
+                            reloadContent($(matches[0]))
+                        }
+                    }
+                })
+            }
+
+            loadMenuItems()
+        })
+    </script>
+{% endif %}
 </body>
 </html>

@@ -19,7 +19,7 @@ class Team
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      */
     private $name;
 
@@ -28,6 +28,11 @@ class Team
      * @ORM\OneToMany(targetEntity="App\Entity\Driver", mappedBy="team")
      */
     private $drivers;
+
+    public function __toString():string
+    {
+        return $this->name;
+    }
 
     public function __construct()
     {

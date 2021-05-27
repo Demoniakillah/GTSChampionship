@@ -1,0 +1,25 @@
+<div class="row">
+    <div style="font-size: 2rem;" class="col-12 text-primary"><u>#{{ data.race }}</u></div>
+    <div style="font-size: 1.5rem;" class="col-12">{{ data.race.date | date }}</div>
+    <div class="col-12 countdown" style="font-size: 1.3rem;"
+    data-year="{{ data.race.date ? data.race.date|date('Y') : '' }}"
+    data-month="{{ data.race.date ? data.race.date|date('m') : '' }}"
+    data-day="{{ data.race.date ? data.race.date|date('d') : '' }}"
+    data-hour="{{ data.race.date ? data.race.date|date('H') : '' }}"
+    data-minute="{{ data.race.date ? data.race.date|date('i') : '' }}">
+    </div>
+    {% for pool in data.pools %}
+        <div class="col">
+            {% set inscriptions = pool.inscriptions %}
+            <div class="text-success" style="font-size: 1.2rem"><strong>pool: </strong>{{ pool.pool }} (<span class="nb">{{ inscriptions | length }}</span>)</div>
+            {{ include('admin/driver_race_table.html.twig') }}
+        </div>
+    {% else %}
+        <i>no pool</i>
+    {% endfor %}
+    <div class="col-12">
+        {% set inscriptions = data.empty_pool ?? {} %}
+        <div><i>no pool (<span class="nb">{{ inscriptions | length }}</span>)</i></div>
+        {{ include('admin/driver_race_table.html.twig') }}
+    </div>
+</div>

@@ -1,0 +1,33 @@
+<h1>Pool Configuration</h1>
+
+<a href="{{ path('pool_configuration_new') }}">Create new</a>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Value</th>
+        <th>actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for pool_configuration in pool_configurations %}
+        <tr>
+            <td>{{ pool_configuration.id }}</td>
+            <td>{{ pool_configuration.name }}</td>
+            <td>{{ pool_configuration.type }}</td>
+            <td>{{ pool_configuration.value }}</td>
+            <td>
+                <a href="{{ path('pool_configuration_show', {'id': pool_configuration.id}) }}">show</a>
+                <a href="{{ path('pool_configuration_edit', {'id': pool_configuration.id}) }}">edit</a>
+            </td>
+        </tr>
+    {% else %}
+        <tr>
+            <td colspan="5">no records found</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+

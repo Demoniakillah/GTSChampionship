@@ -18,7 +18,7 @@ class RaceParameter
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      */
     private $name;
 
@@ -31,6 +31,11 @@ class RaceParameter
      * @ORM\Column(type="text")
      */
     private $availableValues;
+
+    public function __toString():string
+    {
+        return $this->name;
+    }
 
     public function getId(): ?int
     {

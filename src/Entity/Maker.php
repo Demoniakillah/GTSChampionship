@@ -19,7 +19,7 @@ class Maker
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      */
     private $name;
 
@@ -28,6 +28,11 @@ class Maker
      * @ORM\OneToMany(targetEntity="App\Entity\Car", mappedBy="maker")
      */
     private $cars;
+
+    public function __toString():string
+    {
+        return $this->name;
+    }
 
     public function __construct()
     {
@@ -47,7 +52,7 @@ class Maker
     /**
      * @return Car[]
      */
-    public function getCars(): array
+    public function getCars()
     {
         return $this->cars;
     }
