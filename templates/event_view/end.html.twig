@@ -1,7 +1,7 @@
 <h3>Results</h3>
 {% set bestRaceLap = race.driverRaces | bestLap %}
-<p>
 <h4><i>Stats</i></h4>
+{% if bestRaceLap is not null %}
 <table>
     <tr>
         <th>Best lap</th>
@@ -37,7 +37,7 @@
                     class='text-success bi bi-arrow-up-right'>{{ bestRaceProgression.progression }}</span></td>
     </tr>
 </table>
-</p>
+{% endif %}
 <h4><i>Pool ranking</i></h4>
 {% for pool, drivers in results %}
     <div style="margin-bottom: 50px">

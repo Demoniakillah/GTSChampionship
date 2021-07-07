@@ -94,9 +94,8 @@
         {% else %}
             <strong>Cars:</strong>
             <div class="row">
-
                 {% for car in race.cars %}
-                    <div class="col" style="word-break: keep-all; white-space: nowrap">
+                    <div class="col" style="word-break: keep-all; white-space: nowrap; border: #b3d7ff dotted 1px">
                         <strong>{{ car.maker.name }}</strong> - <i>{{ car.name }}</i>
                         <ul>
                             {% for carConfiguration in race.carConfigurations %}

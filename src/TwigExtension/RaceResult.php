@@ -272,7 +272,7 @@ class RaceResult extends AbstractExtension
         usort($driverRaces, static function (DriverRace $a, DriverRace $b) {
             return (int)str_replace(':', '', $a->getBestLap()) > (int)str_replace(':', '', $b->getBestLap());
         });
-        return $driverRaces[0];
+        return $driverRaces[0]??null;
     }
 
     /**

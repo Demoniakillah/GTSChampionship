@@ -31,6 +31,13 @@ class Car
     private $maker;
 
     /**
+     * @var Maker
+     * @ORM\ManyToOne(targetEntity="App\Entity\Maker", inversedBy="cars")
+     * @ORM\JoinColumn(name="maker", referencedColumnName="id")
+     */
+    private $category;
+
+    /**
      * @ORM\Column(type="string", length=255)
      */
     private $name;
@@ -40,6 +47,11 @@ class Car
      * @ORM\OneToMany(targetEntity="App\Entity\DriverRace", mappedBy="car")
      */
     private $races;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $imageSrc;
 
     public function __toString():string
     {
@@ -112,6 +124,18 @@ class Car
     public function setName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getImageSrc(): ?string
+    {
+        return $this->imageSrc;
+    }
+
+    public function setImageSrc(?string $imageSrc): self
+    {
+        $this->imageSrc = $imageSrc;
 
         return $this;
     }

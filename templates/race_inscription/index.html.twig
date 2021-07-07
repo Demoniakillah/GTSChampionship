@@ -1,12 +1,12 @@
 {% extends 'base_public.html.twig' %}
 {% block title %}{{ race.name }} - Inscription{% endblock %}
 {% block javascripts %}
-    {% include 'event_view/js.html.twig'%}
+    {% include 'event_view/js.html.twig' %}
     <script type="text/javascript">
-        $(document).ready(()=>{
+        $(document).ready(() => {
             $('#register').on('click', function () {
-                if($('#psn').val().length < 3 || $('#psn').val().match(/^\w+$/) === null){
-                    $('#psn').css('border','1px solid #dc3545')
+                if ($('#psn').val().length < 3 || $('#psn').val().match(/^\w+$/) === null) {
+                    $('#psn').css('border', '1px solid #dc3545')
                 } else {
                     $.post({
                         url: '{{ path('new_public_race_inscription') }}',
@@ -19,7 +19,7 @@
                         error: function (errorMsg) {
                             $.alert({
                                 title: 'Error!',
-                                content: '<span class="text-danger">'+errorMsg.responseText+'</span>'
+                                content: '<span class="text-danger">' + errorMsg.responseText + '</span>'
                             })
                         },
                         success: function () {
@@ -44,7 +44,8 @@
         <h1 id="event_title" style="color: #fefefe; display: none">{{ race }}</h1>
         <h2>Organized by
             <i>{{ race.userGroup }}</i>
-            {% if race.userGroup.imageUrl is not empty %}<br><img style="width: 150px" src="{{ race.userGroup.imageUrl }}" alt=""/>
+            {% if race.userGroup.imageUrl is not empty %}<br><img style="width: 150px"
+                                                                  src="{{ race.userGroup.imageUrl }}" alt=""/>
             {% endif %}
         </h2>
         <h2 style="color: #fefefe">{% if race.isPassed == false %}
@@ -92,7 +93,8 @@
                     <ul>
                         {% for poolSaloonLabel in race.poolSaloonLabels %}
                             {% if poolSaloonLabel.value is not empty %}
-                                <li>Pool: {{ poolSaloonLabel.pool }} -> <strong>{{ poolSaloonLabel.value }}</strong></li>
+                                <li>Pool: {{ poolSaloonLabel.pool }} -> <strong>{{ poolSaloonLabel.value }}</strong>
+                                </li>
                             {% endif %}
                         {% endfor %}
                     </ul>
@@ -125,22 +127,28 @@
                 {% endfor %}
             {% else %}
                 <strong>Cars:</strong>
-                {% for car in race.cars %}
-                    <li>
-                        {{ car }}
-                        <ul>
-                            {% for carConfiguration in race.carConfigurations %}
-                                {% if carConfiguration.car.id == car.id %}
-                                    <li><i>{{ carConfiguration.parameter }}
-                                            : {{ carConfiguration.value }}{{ carConfiguration.parameter.unity }}</i></li>
-                                {% endif %}
-                            {% endfor %}
-                        </ul>
-                    </li>
-                {% else %}
-                    no cars defined
-                {% endfor %}
-                {% endif %}
+                <div class="row">
+                    {% for car in race.cars %}
+                        <div class="col" style="word-break: keep-all; white-space: nowrap; border: #b3d7ff dotted 1px">
+                            <strong>{{ car.maker.name }}</strong> - <i>{{ car.name }}</i>
+                            <ul>
+                                {% for carConfiguration in race.carConfigurations %}
+                                    {% if carConfiguration.car.id == car.id %}
+                                        <li>
+                                            <i>
+                                                {{ carConfiguration.parameter }}
+                                                : {{ carConfiguration.value }}{{ carConfiguration.parameter.unity }}
+                                            </i>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% else %}
+                        no cars defined
+                    {% endfor %}
+                </div>
+            {% endif %}
                 </p>
                 <p>
                     <span id="show_race_params" class="btn btn-link">Show race parameters</span>
@@ -148,23 +156,23 @@
             </div>
             <div class="col-6">
                 <div class="col-auto">
-                    <label class="sr-only" for="inlineFormInputGroup"></label>
+                    <label class="sr-only" for="psn"></label>
                     <div class="input-group mb-2">
                         <div class="input-group-prepend">
-                            <div class="input-group-text">*PSN: </div>
+                            <div class="input-group-text">*PSN:</div>
                         </div>
                         <input type="text" class="form-control" required id="psn" placeholder="">
                     </div>
                 </div>
                 <div class="col-auto">
-                    <label class="sr-only" for="inlineFormInputGroup"></label>
+                    <label class="sr-only" for="car"></label>
                     <div class="input-group mb-2">
                         <div class="input-group-prepend">
-                            <div class="input-group-text">*Car: </div>
+                            <div class="input-group-text">*Car:</div>
                         </div>
                         <select class="form-select" id="car">
                             {% for car in race.cars %}
-                            <option value="{{ car.id }}">{{ car }}</option>
+                                <option value="{{ car.id }}">{{ car.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
