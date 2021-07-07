@@ -1,0 +1,38 @@
+{% extends 'htmlHeadBottom.html.twig' %}
+{% block stylesheets %}
+    <style>
+        body, td, th {
+            color: #b3d7ff;
+            font-size: 1.2rem;
+        }
+
+        body {
+            background: url("{{ asset('gtsport_wallpaper.png') }}") no-repeat center center fixed;
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+            background-color: #1d2124;
+            text-shadow: 0 0 1px #6610f2;
+        }
+
+        h1, h2 {
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+            text-align: center;
+            box-sizing: inherit;
+            margin: 0 0 .5rem;
+            color: #fefefe;
+            font-size: 4.5rem;
+            line-height: 1.1;
+            font-weight: 700;
+            font-family: Dosis, Arial, Sans-serif, serif !important;
+            text-shadow: 0 0 10px #005cbf;
+        }
+
+        h2 {
+            font-size: 3.5rem;
+            text-shadow: 0 0 8px #007bff;
+        }
+    </style>
+{% endblock %}

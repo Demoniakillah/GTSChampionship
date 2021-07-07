@@ -1,0 +1,190 @@
+{#{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <style>
+        ul {
+
+        }
+
+        li {
+            margin: 0 5px 5px 5px;
+            padding: 5px;
+            font-size: 0.9em;
+            width: 120px;
+            cursor: pointer;
+        }
+
+        select {
+            width: 100%;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}#}
+<style>
+    ul {
+        border: 1px solid #eee;
+        width: 100%;
+        min-height: 20px;
+        list-style-type: none;
+        margin: 0;
+        padding: 5px 0 0 0;
+        float: left;
+        margin-right: 10px;
+    }
+
+    li {
+        margin: 0 5px 5px 5px;
+        padding: 5px;
+        font-size: 0.9em;
+        width: 120px;
+        cursor: pointer;
+    }
+
+    select {
+        width: 100%;
+    }
+</style>
+    <div class="container row">
+        <input type="hidden" id="race" value="{{ race.id }}">
+        <div class="col-2" >
+            <h4>Drivers</h4>
+            <ul class="sortable drivers_pool_connection driver_list" id="driver_list">
+                {% for driver in unsubscribed_drivers %}
+                    <li data-driver="{{ driver.id }}">{{ driver }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-10 row ">
+            {% for name, pool in pool_drivers %}
+                <div class="col">
+                    <h4>Pool: {{ name }}</h4>
+                    <ul data-pool="{{ pool.pool.id }}" class="sortable drivers_pool_connection pool_list">
+                        {% for driver_inscription in pool.drivers %}
+                            <li data-driver="{{ driver_inscription.driver.id }}" data-id="{{ driver_inscription.id }}">
+                                {{ driver_inscription.driver }}
+                                <label>Car:
+                                    <select class="update_race_driver_car_on_change">
+                                        {% for car in race.cars %}
+                                            {% if driver_inscription.car is defined and driver_inscription.car.id == car.id %}
+                                                <option selected="selected"
+                                                        value="{{ car.id }}">{{ car }}</option>
+                                            {% else %}
+                                                <option value="{{ car.id }}">{{ car }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </label>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{#{% endblock %}#}
+
+{#{% block javascripts %}#}
+    <script>
+        $(document).ready(function () {
+            function height(){
+                $.each($('.pool_list'), function (i, ul) {
+                    $(ul).css('height', $("#driver_list").css('height'))
+                })
+            }
+            height()
+            let race_car_list = [];
+            {% for car in race.cars %}
+            race_car_list.push({id:{{ car.id }}, label: "{{ car }}"})
+            {% endfor %}
+
+            $('.update_race_driver_car_on_change').on('change', function () {
+                update_race_driver_car_on_change($(this).parent('li').data('id'), $(this).val())
+            })
+
+            function update_race_driver_car_on_change(driver_race_id, car_id){
+                console.log('update diver race car')
+            }
+
+            let sortable = $(".drivers_pool_connection").sortable({
+                connectWith: ".drivers_pool_connection",
+                placeholder: "ui-state-highlight",
+                stop: function (e, ui) {
+                    let li = $(ui.item);
+                    let ul = li.parent('ul');
+                    if (ul.hasClass('pool_list')) {
+                        if (li.children('select').length < 1) {
+                            let label = document.createElement('label')
+                            label.append('Car:')
+                            let select = document.createElement('select');
+                            $.each(race_car_list, function (i, element) {
+                                let option = document.createElement('option');
+                                option.append(element.label)
+                                option.value = element.id
+                                select.append(option)
+                            })
+                            li.append(label, select)
+                        }
+                        let selectDom = li.children('select')
+                        selectDom.on('change', function () {
+                            update_race_driver_car_on_change(li.data('id'), selectDom.val())
+                        })
+                        let position = 0;
+                        let start_positions = {}
+                        $.each(ul.children('li'), function (i, element) {
+                            element = $(element)
+                            start_positions[i] = element.data('driver')
+                            if (element.data('driver') === li.data('driver')) {
+                                position = i
+                            }
+                        })
+                        let data = {
+                            id: li.data('id'),
+                            pool: parseInt(ul.data('pool')),
+                            start_positions: start_positions,
+                            position: position,
+                            car: parseInt(selectDom.val()),
+                            driver: li.data('driver'),
+                            race: parseInt($('#race').val())
+                        }
+                        $.post({
+                            url: "{{ path('api_set_driver_race_quick_data') }}",
+                            data: data,
+                            error: function (errorMsg) {
+                                $(sortable).sortable("cancel")
+                                $.alert({
+                                    title: 'Error!',
+                                    content: errorMsg.responseText
+                                })
+                                selectDom.prev('label').remove
+                                selectDom.remove()
+                            },
+                            success: function (id) {
+                                li.attr('data-id', id)
+                            }
+                        })
+                    } else {
+                        $.post({
+                            url: "{{ path('api_delete_driver_race_quick_data') }}",
+                            data: {id: li.data('id')},
+                            error: function (errorMsg) {
+                                $(sortable).sortable("cancel")
+                                $.alert({
+                                    title: 'Error!',
+                                    content: errorMsg.responseText
+                                })
+                            },
+                            success: function () {
+                                li.removeAttr('data-id')
+                                li.children('label').remove()
+                                li.children('select').remove()
+                            }
+                        })
+
+                    }
+                    height()
+                }
+            }).disableSelection()
+        })
+    </script>
+{#{% endblock %}#}

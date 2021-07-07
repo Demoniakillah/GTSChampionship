@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}RacePoolSaloonLabel{% endblock %}
+
+{% block body %}
+    <h1>RacePoolSaloonLabel</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ race_pool_saloon_label.id }}</td>
+            </tr>
+            <tr>
+                <th>Label</th>
+                <td>{{ race_pool_saloon_label.value }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('race_pool_saloon_label_index') }}">back to list</a>
+
+    <a href="{{ path('race_pool_saloon_label_edit', {'id': race_pool_saloon_label.id}) }}">edit</a>
+
+    {{ include('race_pool_saloon_label/_delete_form.html.twig') }}
+{% endblock %}

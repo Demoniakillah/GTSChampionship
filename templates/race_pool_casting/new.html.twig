@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New RacePoolCasting{% endblock %}
+
+{% block body %}
+    <h1>Create new RacePoolCasting</h1>
+
+    {{ include('race_pool_casting/_form.html.twig') }}
+
+    <a href="{{ path('race_pool_casting_index') }}">back to list</a>
+{% endblock %}

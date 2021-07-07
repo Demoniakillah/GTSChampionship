@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit RacePoolSaloonLabel{% endblock %}
+
+{% block body %}
+    <h1>Edit RacePoolSaloonLabel</h1>
+
+    {{ include('race_pool_saloon_label/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('race_pool_saloon_label_index') }}">back to list</a>
+
+    {{ include('race_pool_saloon_label/_delete_form.html.twig') }}
+{% endblock %}

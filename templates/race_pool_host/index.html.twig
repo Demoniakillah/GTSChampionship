@@ -1,0 +1,29 @@
+    <h1>RacePoolHost index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for race_pool_host in race_pool_hosts %}
+            <tr>
+                <td>{{ race_pool_host.id }}</td>
+                <td>{{ race_pool_host.value }}</td>
+                <td>
+                    <a href="{{ path('race_pool_host_show', {'id': race_pool_host.id}) }}">show</a>
+                    <a href="{{ path('race_pool_host_edit', {'id': race_pool_host.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('race_pool_host_new') }}">Create new</a>

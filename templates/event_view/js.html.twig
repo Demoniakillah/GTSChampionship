@@ -1,0 +1,37 @@
+
+<script type="text/javascript" src="{{ asset('countdown.js') }}"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        countdown()
+        $('#show_race_params').on('click', function () {
+            $.dialog({
+                title: "",
+                content: $('#race_parameters').html(),
+                width: "100%",
+                boxWidth: "95%",
+                useBootstrap: false,
+                escapeKey: true
+            })
+        })
+        $('#race_terms_show').on('click', function () {
+            $.dialog({
+                title: "",
+                content: $('#race_terms').html(),
+                width: "100%",
+                boxWidth: "95%",
+                useBootstrap: false,
+                escapeKey: true
+            })
+        })
+        $('#general_terms_show').on('click', function () {
+            $.dialog({
+                title: "",
+                content: $('#general_terms').html(),
+                width: "100%",
+                boxWidth: "95%",
+                useBootstrap: false,
+                escapeKey: true
+            })
+        })
+    })
+</script>

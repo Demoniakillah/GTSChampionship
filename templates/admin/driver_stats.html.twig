@@ -1,0 +1,77 @@
+<div style="text-align: center; font-size: 1.5rem">{{ driver }}</div>
+<div>won races: {{ won | length }}</div>
+<div>best laps: {{ bestLaps | length }}</div>
+<div>finished races: {{ finishedRaces | length }}</div>
+<div>missed races: {{ missedRaces | length }}</div>
+<div>deco races: {{ decoRaces | length }}</div>
+<div>race ranking:
+    <table class="table">
+        <thead>
+        <tr>
+            <th>event</th>
+            {% for driverRace in finishedRaces %}
+                <th>{{ driverRace.race }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <th>rank</th>
+        {% set lastPosition = false %}
+        {% for driverRace in finishedRaces %}
+            {% if lastPosition== false %}
+            <td>{{ driverRace.finishPosition + 1 }}</td>
+            {% else %}
+                {% set diff = driverRace.finishPosition - lastPosition %}
+                {% if diff > 0 %}
+                    {% set text = '+'~diff %}
+                    {% set class = 'bi bi-arrow-down-right text-danger' %}
+                {% elseif diff == 0 %}
+                    {% set text = '=' %}
+                    {% set class = 'bi bi-equal text-default' %}
+                {% else %}
+                    {% set text = diff %}
+                    {% set class = 'bi bi-arrow-up-right text-success' %}
+                {% endif %}
+                <td>{{ driverRace.finishPosition + 1 }} (<span class="{{ class }}">{{ text }}</span>)</td>
+            {% endif %}
+            {% set lastPosition = driverRace.finishPosition %}
+        {% endfor %}
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div>pool ranking:
+    <table class="table">
+        <thead>
+        <tr>
+            <th>event</th>
+            {% for driverRace in finishedRaces %}
+                <th>{{ driverRace.race }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <th>pool</th>
+        {% set lastPool = false %}
+        {% for driverRace in finishedRaces %}
+            {% if lastPool== false %}
+            <td>{{ driverRace.pool }}</td>
+            {% else %}
+                {% if driverRace.pool.priority > lastPool.priority %}
+                    {% set class = 'bi bi-arrow-down-right text-danger' %}
+                {% elseif driverRace.pool.priority == lastPool.priority %}
+                    {% set class = 'bi bi-equal text-default' %}
+                {% else %}
+                    {% set class = 'bi bi-arrow-up-right text-success' %}
+                {% endif %}
+                <td><span class="{{ class }}"></span>{{ driverRace.pool }}</td>
+            {% endif %}
+            {% set lastPool = driverRace.pool %}
+        {% endfor %}
+        </tr>
+        </tbody>
+    </table>
+</div>

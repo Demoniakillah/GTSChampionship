@@ -1,0 +1,12 @@
+<div>
+    <h2>traffic</h2>
+    <div class="row">
+        {% for date,traffics in logs %}
+            <div class="col-1">{{ date }}</div>
+            <div class="col-10" style="border: solid 1px  #b3d7ff; border-right: 0;  padding: 0">
+                <div style="width: {{ ((traffics|length)/max)*100 }}%; background-color: #007bff; color: #007bff; ">.</div>
+            </div>
+            <div class="col-1" style="border: solid 1px  #b3d7ff; border-left: 0;border-right: 0;">{{ traffics|length }}</div>
+        {% endfor %}
+    </div>
+</div>

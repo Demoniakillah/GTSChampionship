@@ -1,0 +1,124 @@
+<h3>Results</h3>
+{% set bestRaceLap = race.driverRaces | bestLap %}
+<p>
+<h4><i>Stats</i></h4>
+<table>
+    <tr>
+        <th>Best lap</th>
+    </tr>
+    <tr>
+        <td></td>
+        <th style="padding-right: 5px">Driver</th>
+        <td>{{ bestRaceLap.driver }}</td>
+    </tr>
+    <tr>
+        <td></td>
+        <th>Car</th>
+        <td>{{ bestRaceLap.car }}</td>
+    </tr>
+    <tr>
+        <td></td>
+        <th>Team</th>
+        <td>{{ bestRaceLap.driver.team }}</td>
+    </tr>
+    <tr>
+        <td></td>
+        <th>Time</th>
+        <td>{{ bestRaceLap.bestLap }}</td>
+    </tr>
+    <tr>
+        <th>Best team</th>
+        <td>{{ race.driverRaces | bestTeam }}</td>
+    </tr>
+    <tr>
+        <th>Best progression</th>
+        {% set bestRaceProgression = race.driverRaces | bestProgression %}
+        <td>{{ bestRaceProgression.driver }} <span
+                    class='text-success bi bi-arrow-up-right'>{{ bestRaceProgression.progression }}</span></td>
+    </tr>
+</table>
+</p>
+<h4><i>Pool ranking</i></h4>
+{% for pool, drivers in results %}
+    <div style="margin-bottom: 50px">
+        <h3 style="text-align: center"><u>Pool: {{ pool }}</u></h3>
+        {% set bestPoolLap = drivers | bestLap %}
+        <h5>Pool stats</h5>
+        <table style="margin-bottom: 15px">
+            <tr>
+                <th>Best lap</th>
+            </tr>
+            <tr>
+                <td></td>
+                <th style="padding-right: 5px">Driver</th>
+                <td>{{ bestPoolLap.driver }}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <th>Car</th>
+                <td>{{ bestPoolLap.car }}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <th>Team</th>
+                <td>{{ bestPoolLap.driver.team }}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <th>Time</th>
+                <td>{{ bestPoolLap.bestLap }}</td>
+            </tr>
+            <tr>
+                <th>Best team</th>
+                <td>{{ drivers | bestTeam }}</td>
+            </tr>
+            <tr>
+                <th>Best progression</th>
+                {% set bestRaceProgression = drivers | bestProgression %}
+                <td>{{ bestRaceProgression.driver }} <span
+                            class='text-success bi bi-arrow-up-right'>{{ bestRaceProgression.progression }}</span></td>
+            </tr>
+        </table>
+        <h5>Pool results</h5>
+        <table class="table">
+            <tr>
+                <th>Final rank</th>
+                <th>PSN</th>
+                <th>Race rank<br>(before bonus and penalty)</th>
+                <th>Team</th>
+                <th>Car</th>
+                <th>Best lap</th>
+                <th>Rank points</th>
+                <th>Bonus</th>
+                <th>Penalty</th>
+                <th>Points</th>
+                <th>Status</th>
+            </tr>
+            {% for driver in drivers %}
+                <tr>
+                    {% set class = 'text-danger bi bi-arrow-down-right' %}
+                    {% if loop.index-1 < driver.startPosition %}
+                        {% set class = 'text-success bi bi-arrow-up-right' %}
+                    {% elseif loop.index-1 == driver.startPosition %}
+                        {% set class = 'text-default' %}
+                    {% endif %}
+                    {% set deltaRank = loop.index-1 - driver.startPosition %}
+                    <td>{{ loop.index }} <span
+                                class="{{ class }}">{{ deltaRank > 0 ? '+'~deltaRank : deltaRank == 0 ? '' : deltaRank }}</span>
+                    </td>
+                    <td>{{ driver.driver }}</td>
+                    <td>{{ driver.finishStatus == 0 ? driver.finishPosition+1 : '-' }}</td>
+                    <td>{{ driver.driver.team }}</td>
+                    <td>{{ driver.car }}</td>
+                    <td>{{ driver.bestLap != '00:00:000' ? driver.bestLap }}</td>
+                    <td>{{ driver.finishStatus == 0 ? driver.pool.points[driver.finishPosition] : driver.pool.points[driver.pool.points|length-1] }}</td>
+                    <td>{{ driver.bonus }}</td>
+                    <td>{{ driver.penalty }}</td>
+                    <td>{{ driver.points }}</td>
+                    <td>{{ driver.finishStatus == 0 ? 'FINISHED' : driver.finishStatus == 1 ? 'DISCONNECTED' : 'MISSING' }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        <hr>
+    </div>
+{% endfor %}

@@ -1,0 +1,156 @@
+{% extends 'base_public.html.twig' %}
+
+{% block title %}{{ race.name }}{% endblock %}
+
+{% block javascripts %}
+    {% include 'event_view/js.html.twig'%}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 style="color: #fefefe; ">{{ race }}</h1>
+    <h1 id="event_title" style="color: #fefefe; display: none">{{ race }}</h1>
+    <h2>Organized by
+        <i>{{ race.userGroup }}</i>
+        {% if race.userGroup.imageUrl is not empty %}<br><img style="width: 150px" src="{{ race.userGroup.imageUrl }}" alt=""/>
+        {% endif %}
+    </h2>
+    <h2 style="color: #fefefe">{% if race.isPassed == false %}
+        <div
+                class="countdown"
+                data-year="{{ race.date ? race.date|date('Y') : '' }}"
+                data-month="{{ race.date ? race.date|date('m') : '' }}"
+                data-day="{{ race.date ? race.date|date('d') : '' }}"
+                data-hour="{{ race.date ? race.date|date('H') : '' }}"
+                data-minute="{{ race.date ? race.date|date('i') : '' }}"></div>{% endif %}
+    </h2>
+    {% if race.imageUrl is defined %}
+        <div class="row" style="margin-bottom: 20px">
+            <img src="{{ race.imageUrl }}" style="width: 100%; box-shadow: 0 0 10px red;" alt="">
+        </div>
+    {% endif %}
+    <div>
+        <p>
+            <strong>Date: </strong> {{ race.date | date('Y-m-d H:i:s') }}
+        </p>
+        <p>
+            <strong>Track: </strong> {{ race.track ?? 'undefined' }}
+        </p>
+        {% if car.livery is defined %}
+            <p>
+                <strong>Livery theme: </strong> {{ race.livery }}
+            </p>
+        {% endif %}
+        {% if race.poolHosts is defined and race.poolHosts is not empty %}
+            <p>
+                <strong>Hosts:</strong>
+            <ul>
+                {% for poolHost in race.poolHosts %}
+                    {% if poolHost.value is not empty %}
+                        <li>Pool: {{ poolHost.pool }} -> <strong>{{ poolHost.value }}</strong></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+            </p>
+        {% endif %}
+        {% if race.poolSaloonLabels is defined and race.poolSaloonLabels is not empty %}
+            <p>
+                <strong>Saloons:</strong>
+            <ul>
+                {% for poolSaloonLabel in race.poolSaloonLabels %}
+                    {% if poolSaloonLabel.value is not empty %}
+                        <li>Pool: {{ poolSaloonLabel.pool }} -> <strong>{{ poolSaloonLabel.value }}</strong></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+            </p>
+        {% endif %}
+        {% if race.poolCastings is defined and race.poolCastings is not empty %}
+            <p>
+                <strong>Casting links:</strong>
+            <ul>
+                {% for poolCasting in race.poolCastings %}
+                    {% if poolCasting.value is not empty %}
+                        <li>Pool: {{ poolCasting.pool }}: <a
+                                    href="{{ poolCasting.value }}"><strong>{{ poolCasting.value }}</strong></a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+            </p>
+        {% endif %}
+        <p>
+            {% if race.cars | length == 1 %}
+            <strong>Mono type:</strong> {{ race.cars[0] }}
+            {% for carConfiguration in race.carConfigurations %}
+        <ul>
+            {% if carConfiguration.car.id == race.cars[0].id %}
+                <li><i>{{ carConfiguration.parameter }}
+                        : {{ carConfiguration.value }}{{ carConfiguration.parameter.unity }}</i></li>
+            {% endif %}
+        </ul>
+        {% endfor %}
+    {% else %}
+        <strong>Cars:</strong>
+        {% for car in race.cars %}
+            <li>
+                {{ car }}
+                <ul>
+                    {% for carConfiguration in race.carConfigurations %}
+                        {% if carConfiguration.car.id == car.id %}
+                            <li><i>{{ carConfiguration.parameter }}
+                                    : {{ carConfiguration.value }}{{ carConfiguration.parameter.unity }}</i></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </li>
+        {% else %}
+            no cars defined
+        {% endfor %}
+        {% endif %}
+        </p>
+        <p>
+            <span id="show_race_params" class="btn btn-link">Show race parameters</span>
+        </p>
+        {{ include('event_view/start.html.twig') }}
+        {% if race.isPassed == true %}
+            {{ include('event_view/end.html.twig') }}
+        {% endif %}
+    </div>
+</div>
+{% if race.isPassed == fale %}
+    <hr>
+    <a class="col-12 btn btn-primary" href="{{ path('public_race_inscription',{'id':race.id}) }}">Subscribe to this race</a>
+{% endif %}
+<hr>
+<div style="text-align: center">
+    <span class="btn btn-link" id="race_terms_show">Race Terms</span>
+{#    -#}
+{#    <span class="btn btn-link" id="general_terms_show">General Terms</span>#}
+</div>
+
+
+<div id="race_terms" style="display:none; text-align: justify">
+    <div style="background-color: #0f6674; padding:10px">{{ race.moreDetails | nl2br }}</div>
+</div>
+<div id="general_terms" style="display:none; text-align: justify">
+    <div style="background-color: #0f6674; padding:10px">{{ terms | nl2br | raw }}</div>
+</div>
+<div id="race_parameters" style="display:none">
+    <div style="background-color: #0f6674; padding:10px">
+        <h4>Race parameters:</h4>
+        <div class="row">
+            {% for configuration in race.configurations %}
+                {% if configuration.parameter == "Time" and race.isEndurance == false %}
+                {% elseif configuration.parameter == "Laps" and race.isEndurance == true %}
+                {% else %}
+                    <div class="col-3"><strong>{{ configuration.parameter }}
+                            : </strong> {{ configuration | configurationValue }}</div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

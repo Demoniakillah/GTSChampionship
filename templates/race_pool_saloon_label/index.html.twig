@@ -1,0 +1,29 @@
+    <h1>RacePoolSaloonLabel index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Label</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for race_pool_saloon_label in race_pool_saloon_labels %}
+            <tr>
+                <td>{{ race_pool_saloon_label.id }}</td>
+                <td>{{ race_pool_saloon_label.value }}</td>
+                <td>
+                    <a href="{{ path('race_pool_saloon_label_show', {'id': race_pool_saloon_label.id}) }}">show</a>
+                    <a href="{{ path('race_pool_saloon_label_edit', {'id': race_pool_saloon_label.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('race_pool_saloon_label_new') }}">Create new</a>

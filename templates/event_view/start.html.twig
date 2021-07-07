@@ -1,0 +1,47 @@
+<h3>Start Grid</h3>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Position</th>
+        <th>PSN</th>
+        <th>Team</th>
+        <th>Car</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for poolData in inscriptions %}
+    {% if poolData.pool is defined %}
+    <tr>
+        <th colspan="4">pool: {{ poolData.pool }}</th>
+    </tr>
+    {% if poolData.pool.saloon is defined %}
+        <tr>
+            <th colspan="4">saloon label: {{ poolData.pool.saloon }}</th>
+        </tr>
+    {% endif %}
+    {% if poolData.pool.casting is defined %}
+        <tr>
+            <th colspan="4">streaming: {{ poolData.pool.casting }}</th>
+        </tr>
+    {% endif %}
+    <tbody>
+
+    {% for driver in poolData.drivers %}
+        {% if driver.isValidInscription %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ driver.driver }}</td>
+                <td>{{ driver.driver.team }}</td>
+                <td>{{ driver.car }}</td>
+            </tr>
+        {% endif %}
+    {% else %}
+        <tr>
+            <td>empty</td>
+        </tr>
+    {% endfor %}
+    {% endif %}
+    {% endfor %}
+    </tbody>
+</table>
