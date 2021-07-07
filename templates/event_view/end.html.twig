@@ -44,41 +44,43 @@
         <h3 style="text-align: center"><u>Pool: {{ pool }}</u></h3>
         {% set bestPoolLap = drivers | bestLap %}
         <h5>Pool stats</h5>
-        <table style="margin-bottom: 15px">
-            <tr>
-                <th>Best lap</th>
-            </tr>
-            <tr>
-                <td></td>
-                <th style="padding-right: 5px">Driver</th>
-                <td>{{ bestPoolLap.driver }}</td>
-            </tr>
-            <tr>
-                <td></td>
-                <th>Car</th>
-                <td>{{ bestPoolLap.car }}</td>
-            </tr>
-            <tr>
-                <td></td>
-                <th>Team</th>
-                <td>{{ bestPoolLap.driver.team }}</td>
-            </tr>
-            <tr>
-                <td></td>
-                <th>Time</th>
-                <td>{{ bestPoolLap.bestLap }}</td>
-            </tr>
-            <tr>
-                <th>Best team</th>
-                <td>{{ drivers | bestTeam }}</td>
-            </tr>
-            <tr>
-                <th>Best progression</th>
-                {% set bestRaceProgression = drivers | bestProgression %}
-                <td>{{ bestRaceProgression.driver }} <span
-                            class='text-success bi bi-arrow-up-right'>{{ bestRaceProgression.progression }}</span></td>
-            </tr>
-        </table>
+        {% if bestPoolLap is not null %}
+            <table style="margin-bottom: 15px">
+                <tr>
+                    <th>Best lap</th>
+                </tr>
+                <tr>
+                    <td></td>
+                    <th style="padding-right: 5px">Driver</th>
+                    <td>{{ bestPoolLap.driver }}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <th>Car</th>
+                    <td>{{ bestPoolLap.car }}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <th>Team</th>
+                    <td>{{ bestPoolLap.driver.team }}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <th>Time</th>
+                    <td>{{ bestPoolLap.bestLap }}</td>
+                </tr>
+                <tr>
+                    <th>Best team</th>
+                    <td>{{ drivers | bestTeam }}</td>
+                </tr>
+                <tr>
+                    <th>Best progression</th>
+                    {% set bestRaceProgression = drivers | bestProgression %}
+                    <td>{{ bestRaceProgression.driver }} <span
+                                class='text-success bi bi-arrow-up-right'>{{ bestRaceProgression.progression }}</span></td>
+                </tr>
+            </table>
+        {% endif %}
         <h5>Pool results</h5>
         <table class="table">
             <tr>
