@@ -105,7 +105,7 @@
                         {% set class = 'text-default' %}
                     {% endif %}
                     {% set deltaRank = loop.index-1 - driver.startPosition %}
-                    <td>{{ loop.index }} <span
+                    <td style="white-space: nowrap">{{ loop.index }} <span
                                 class="{{ class }}">{{ deltaRank > 0 ? '+'~deltaRank : deltaRank == 0 ? '' : deltaRank }}</span>
                     </td>
                     <td>{{ driver.driver }}</td>
