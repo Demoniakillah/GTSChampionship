@@ -14,7 +14,7 @@
             <i>{{ race.userGroup }}</i>
             <p>
                 {% for user in race.userGroup.accounts %}
-                    <span>{{ user.username }}</span><br>
+                    <span>- {{ user.username }}</span><br>
                 {% endfor %}
             </p>
             {% if race.userGroup.imageUrl is not empty %}<br><img style="width: 150px"
