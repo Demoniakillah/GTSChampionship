@@ -1,8 +1,4 @@
 <h1>Terms</h1>
-{% if terms | length == 0  %}
-<a href="{{ path('terms_new') }}">Create new</a>
-{% endif %}
-
 <table class="table">
     <thead>
     <tr>
@@ -11,22 +7,16 @@
     </tr>
     </thead>
     <tbody>
-    {% for term in terms %}
-        <tr>
-            <td>{{ term.text | nl2br | raw }}</td>
+       <tr>
+            <td>{{ terms.text | raw | nl2br }}</td>
             <td>
-                <a class="remove_element bi bi-trash text-danger" data-token="{{ csrf_token('delete'~term.id) }}"
-                   style="float: right" data-remove_url="{{ path('terms_delete',{'id':term.id}) }}"></a>
+                <a class="remove_element bi bi-trash text-danger" data-token="{{ csrf_token('delete'~terms.id) }}"
+                   style="float: right" data-remove_url="{{ path('terms_delete',{'id':terms.id}) }}"></a>
 
-                <a class="get_form_button bi bi-pencil-square text-success" data-token="{{ csrf_token('edit'~term.id) }}"
-                   data-form_url="{{ path('admin_terms_edit',{'id':term.id}) }}"></a>
+                <a class="get_form_button bi bi-pencil-square text-success" data-token="{{ csrf_token('edit'~terms.id) }}"
+                   data-form_url="{{ path('admin_terms_edit',{'id':terms.id}) }}"></a>
             </td>
         </tr>
-    {% else %}
-        <tr>
-            <td colspan="3">no records found</td>
-        </tr>
-    {% endfor %}
     </tbody>
 </table>
 <script src="{{ asset('admin_form.js') }}"></script>

@@ -71,6 +71,8 @@ class ApiRaceCarConfigurationController extends AbstractController
 
     /**
      * @Route("/get", name="api_get_race_car_configuration", methods={"POST"})
+     * @param Request $request
+     * @return Response
      */
     public function getConfigurations(Request $request): Response
     {

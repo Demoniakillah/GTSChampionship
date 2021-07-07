@@ -1,5 +1,5 @@
 <div class="row">
-    <div style="font-size: 2rem;" class="col-12 text-primary"><u>#{{ data.race }}</u></div>
+    <a style="font-size: 2rem;" class="col-12 text-primary quick_manage_race_inscriptions" data-id="{{ data.race.id }}"><u>#{{ data.race }}</u></a>
     <div style="font-size: 1.5rem;" class="col-12">{{ data.race.date | date }}</div>
     <div class="col-12 countdown" style="font-size: 1.3rem;"
     data-year="{{ data.race.date ? data.race.date|date('Y') : '' }}"

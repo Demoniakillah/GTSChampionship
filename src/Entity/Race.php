@@ -3,12 +3,21 @@
 namespace App\Entity;
 
 use App\Repository\RaceRepository;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\PersistentCollection;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 
 /**
  * @ORM\Entity(repositoryClass=RaceRepository::class)
+ * @ORM\Table(uniqueConstraints={
+ *     @UniqueConstraint(
+ *              name="unique_race_name_by_account",
+ *              columns={"user_group","name"}
+ *          )
+ *     })
  */
 class Race
 {
@@ -22,27 +31,35 @@ class Race
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      */
-    private $name;
+    private string $name;
 
     /**
      * @ORM\Column(type="datetime")
      */
-    private $date;
+    private DateTimeInterface $date;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $casting;
+    private ?string $livery;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @var RacePoolHost[]
+     * @ORM\OneToMany(targetEntity="App\Entity\RacePoolHost", mappedBy="race", cascade={"remove"})
      */
-    private $host;
+    private $poolHosts;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @var RacePoolCasting[]
+     * @ORM\OneToMany(targetEntity="App\Entity\RacePoolCasting", mappedBy="race", cascade={"remove"})
      */
-    private $livery;
+    private $poolCastings;
+
+    /**
+     * @var RacePoolSaloonLabel[]
+     * @ORM\OneToMany(targetEntity="App\Entity\RacePoolSaloonLabel", mappedBy="race", cascade={"remove"})
+     */
+    private $poolSaloonLabels;
 
     /**
      * @var Track
@@ -81,12 +98,62 @@ class Race
     private $carConfigurations;
 
     /**
-     * @var string
+     * @var string|null
      * @ORM\Column(name="more_details", type="text", nullable=true)
      */
-    private $moreDetails;
+    private ?string $moreDetails;
 
-    public function __toString():string
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private bool $isEndurance = false;
+
+    /**
+     * @ORM\Column(type="string", length=500, nullable=true)
+     */
+    private ?string $imageUrl;
+
+    /**
+     * @var UserGroup
+     * @ORM\ManyToOne(targetEntity="App\Entity\UserGroup", inversedBy="races")
+     * @ORM\JoinColumn(name="user_group", referencedColumnName="id")
+     */
+    private UserGroup $userGroup;
+
+    /**
+     * @param UserGroup $userGroup
+     * @return Race
+     */
+    public function setUserGroup(UserGroup $userGroup): self
+    {
+        $this->userGroup = $userGroup;
+        return $this;
+    }
+
+    /**
+     * @return UserGroup
+     */
+    public function getUserGroup(): UserGroup
+    {
+        return $this->userGroup;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPassed(): bool
+    {
+        $now = new DateTime();
+        return
+            $this->date instanceof DateTimeInterface
+            &&
+            $this->date->getTimestamp() < $now->getTimestamp();
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
     {
         return $this->name;
     }
@@ -103,7 +170,7 @@ class Race
      * @param string $moreDetails
      * @return Race
      */
-    public function setMoreDetails(string $moreDetails): Race
+    public function setMoreDetails(?string $moreDetails = ''): Race
     {
         $this->moreDetails = $moreDetails;
 
@@ -122,7 +189,7 @@ class Race
      * @param RaceConfiguration[] $configurations
      * @return Race
      */
-    public function setConfigurations(array $configurations): Race
+    public function setConfigurations($configurations): Race
     {
         $this->configurations = $configurations;
 
@@ -130,7 +197,7 @@ class Race
     }
 
     /**
-     * @return DriverRace[]
+     * @return PersistentCollection|DriverRace[]
      */
     public function getDriverRaces()
     {
@@ -138,10 +205,64 @@ class Race
     }
 
     /**
-     * @param DriverRace[] $driverRaces
+     * @return RacePoolHost[]
+     */
+    public function getPoolHosts()
+    {
+        return $this->poolHosts;
+    }
+
+    /**
+     * @param RacePoolHost[] $poolHosts
      * @return Race
      */
-    public function setDriverRaces(array $driverRaces): Race
+    public function setPoolHosts($poolHosts): Race
+    {
+        $this->poolHosts = $poolHosts;
+        return $this;
+    }
+
+    /**
+     * @return RacePoolCasting[]
+     */
+    public function getPoolCastings()
+    {
+        return $this->poolCastings;
+    }
+
+    /**
+     * @param RacePoolCasting[] $poolCastings
+     * @return Race
+     */
+    public function setPoolCastings($poolCastings): Race
+    {
+        $this->poolCastings = $poolCastings;
+        return $this;
+    }
+
+    /**
+     * @return RacePoolSaloonLabel[]
+     */
+    public function getPoolSaloonLabels()
+    {
+        return $this->poolSaloonLabels;
+    }
+
+    /**
+     * @param RacePoolSaloonLabel[] $poolSaloonLabels
+     * @return Race
+     */
+    public function setPoolSaloonLabels($poolSaloonLabels): Race
+    {
+        $this->poolSaloonLabels = $poolSaloonLabels;
+        return $this;
+    }
+
+    /**
+     * @param ArrayCollection|DriverRace[] $driverRaces
+     * @return Race
+     */
+    public function setDriverRaces($driverRaces): Race
     {
         $this->driverRaces = $driverRaces;
 
@@ -155,6 +276,17 @@ class Race
     public function addConfiguration(RaceConfiguration $configuration): Race
     {
         $this->configurations[] = $configuration;
+
+        return $this;
+    }
+
+    /**
+     * @param RaceCarConfiguration $carConfiguration
+     * @return Race
+     */
+    public function addCarConfiguration(RaceCarConfiguration $carConfiguration): Race
+    {
+        $this->carConfigurations[] = $carConfiguration;
 
         return $this;
     }
@@ -179,7 +311,7 @@ class Race
      * @param Car[] $cars
      * @return Race
      */
-    public function setCars(array $cars): Race
+    public function setCars($cars): Race
     {
         $this->cars = $cars;
 
@@ -208,15 +340,39 @@ class Race
         return $this;
     }
 
-    public function __construct()
+    /**
+     * Race constructor.
+     * @param Race|null $race
+     */
+    public function __construct(Race $race = null)
     {
-        $this->cars = new ArrayCollection();
-        $this->driverRaces = new ArrayCollection();
-        $this->configurations = new ArrayCollection();
-        $this->carConfigurations = new ArrayCollection();
-        $this->date = new \DateTime();
+        if ($race instanceof self) {
+            $methods = [];
+            foreach (get_class_methods(self::class) as $method) {
+                if (false === strpos($method, "getId") && 0 === strpos($method, "get")) {
+                    $methods[$method] = str_replace('get', 'set', $method);
+                }
+            }
+            foreach ($methods as $get => $set) {
+                if (!is_null($race->$get())) {
+                    $this->$set($race->$get());
+                }
+            }
+        } else {
+            $this->poolHosts = new ArrayCollection();
+            $this->poolSaloonLabels = new ArrayCollection();
+            $this->poolCastings = new ArrayCollection();
+            $this->cars = new ArrayCollection();
+            $this->driverRaces = new ArrayCollection();
+            $this->configurations = new ArrayCollection();
+            $this->carConfigurations = new ArrayCollection();
+            $this->date = new DateTime();
+        }
     }
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
@@ -241,11 +397,18 @@ class Race
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getName(): string
     {
         return $this->name;
     }
 
+    /**
+     * @param string $name
+     * @return $this
+     */
     public function setName(string $name): self
     {
         $this->name = $name;
@@ -253,51 +416,92 @@ class Race
         return $this;
     }
 
-    public function getDate(): ?\DateTimeInterface
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getDate(): ?DateTimeInterface
     {
         return $this->date;
     }
 
-    public function setDate(\DateTimeInterface $date): self
+    /**
+     * @param DateTimeInterface $date
+     * @return $this
+     */
+    public function setDate(DateTimeInterface $date): self
     {
         $this->date = $date;
 
         return $this;
     }
 
-    public function getCasting(): ?string
-    {
-        return $this->casting;
-    }
-
-    public function setCasting(?string $casting): self
-    {
-        $this->casting = $casting;
-
-        return $this;
-    }
-
-    public function getHost(): ?string
-    {
-        return $this->host;
-    }
-
-    public function setHost(?string $host): self
-    {
-        $this->host = $host;
-
-        return $this;
-    }
-
+    /**
+     * @return string|null
+     */
     public function getLivery(): ?string
     {
         return $this->livery;
     }
 
+    /**
+     * @param string|null $livery
+     * @return $this
+     */
     public function setLivery(?string $livery): self
     {
         $this->livery = $livery;
 
         return $this;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function getIsEndurance(): ?bool
+    {
+        return $this->isEndurance;
+    }
+
+    /**
+     * @param bool $isEndurance
+     * @return $this
+     */
+    public function setIsEndurance(bool $isEndurance): self
+    {
+        $this->isEndurance = $isEndurance;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getImageUrl(): ?string
+    {
+        return $this->imageUrl;
+    }
+
+    /**
+     * @param string|null $imageUrl
+     * @return $this
+     */
+    public function setImageUrl(?string $imageUrl): self
+    {
+        $this->imageUrl = $imageUrl;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isValidForInscription(): bool
+    {
+        return
+            !$this->cars->isEmpty()
+            &&
+            !empty($this->track)
+            &&
+            !$this->isPassed();
     }
 }

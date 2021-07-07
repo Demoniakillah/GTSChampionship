@@ -18,6 +18,8 @@ class PoolController extends MainController
 {
     /**
      * @Route("/", name="pool_index", methods={"GET"})
+     * @param PoolRepository $poolRepository
+     * @return Response
      */
     public function index(PoolRepository $poolRepository): Response
     {
@@ -37,6 +39,7 @@ class PoolController extends MainController
         return array_merge(
             parent::getFormOptions(),
             [
+                'user_group' => $this->getUser()->getUserGroup(),
                 'pool_repository' => $this->getDoctrine()->getRepository(Pool::class),
                 'pool_configuration_repository' => $this->getDoctrine()->getRepository(PoolConfiguration::class),
             ]
@@ -45,6 +48,8 @@ class PoolController extends MainController
 
     /**
      * @Route("/new", name="pool_new", methods={"GET","POST"})
+     * @param Request $request
+     * @return Response
      */
     public function new(Request $request): Response
     {
@@ -72,6 +77,8 @@ class PoolController extends MainController
 
     /**
      * @Route("/{id}", name="pool_show", methods={"GET"})
+     * @param Pool $pool
+     * @return Response
      */
     public function show(Pool $pool): Response
     {
@@ -85,6 +92,9 @@ class PoolController extends MainController
 
     /**
      * @Route("/{id}/edit", name="pool_edit", methods={"GET","POST"})
+     * @param Request $request
+     * @param Pool $pool
+     * @return Response
      */
     public function edit(Request $request, Pool $pool): Response
     {

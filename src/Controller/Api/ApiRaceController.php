@@ -19,6 +19,8 @@ class ApiRaceController extends AbstractController
 {
     /**
      * @Route("/cars", name="api_get_race_cars", methods={"POST"})
+     * @param Request $request
+     * @return JsonResponse
      */
     public function getCars(Request $request): JsonResponse
     {
@@ -32,8 +34,7 @@ class ApiRaceController extends AbstractController
                     );
                     foreach ($race->getCars() as $car) {
                         $output['list'][$car->getMaker()->getName()][$car->getName()] = $car->getId();
-                        if (($inscription instanceof DriverRace) && $inscription->getCar(
-                            ) instanceof Car && $inscription->getCar()->getId() === $car->getId()) {
+                        if (($inscription instanceof DriverRace) && $inscription->getCar() instanceof Car && $inscription->getCar()->getId() === $car->getId()) {
                             $output['selected'] = $car->getId();
                         }
                     }
@@ -44,8 +45,7 @@ class ApiRaceController extends AbstractController
                     );
                     foreach ($race->getCars() as $car) {
                         $output['list'][$car->getMaker()->getName()][$car->getName()] = $car->getId();
-                        if (($configuration instanceof RaceCarConfiguration) && $configuration->getCar(
-                            ) instanceof Car && $configuration->getCar()->getId() === $car->getId()) {
+                        if (($configuration instanceof RaceCarConfiguration) && $configuration->getCar() instanceof Car && $configuration->getCar()->getId() === $car->getId()) {
                             $output['selected'] = $car->getId();
                         }
                     }
@@ -59,50 +59,36 @@ class ApiRaceController extends AbstractController
 
     /**
      * @Route("/drivers", name="api_get_race_drivers", methods={"POST"})
+     * @param Request $request
+     * @return JsonResponse
      */
     public function getDrivers(Request $request): JsonResponse
     {
+
         $output = ['selected' => null, 'list' => []];
-        $inscription = $this->getDoctrine()->getRepository(DriverRace::class)->find(
-            $request->request->get('inscription')
-        );
-
-        $allDivers = [];
-        foreach ($this->getDoctrine()->getRepository(Driver::class)->findAll() as $driver) {
-            $allDivers[$driver->getId()] = $driver;
-        }
-        $allSubscribedDrivers = [];
-        if ($inscription instanceof DriverRace && $inscription->getRace() instanceof Race) {
-            foreach ($inscription->getRace()->getDriverRaces() as $subscription) {
-                $driver = $subscription->getDriver();
-                if ($driver instanceof Driver) {
-                    $allSubscribedDrivers[$driver->getId()] = $driver;
-                }
-            }
-            dd($allDivers, $allSubscribedDrivers, array_diff_assoc($allDivers, $allSubscribedDrivers));
-        }
-
-
         if ($request->request->has('race')) {
             $race = $this->getDoctrine()->getRepository(Race::class)->find($request->request->get('race'));
-            if ($race instanceof Race) {
-                $inscription = $this->getDoctrine()->getRepository(DriverRace::class)->find(
-                    $request->request->get('inscription')
-                );
-                foreach ($race->getDriverRaces() as $driverRace) {
-                    $driver = $driverRace->getDriver();
-                    if ($driver instanceof Driver) {
-                        $output['list'][$driver->getId()] = $driver->getPsn();
-                        if (($inscription instanceof DriverRace) && $inscription->getDriver(
-                            ) instanceof Driver && $inscription->getDriver()->getId() === $driver->getId()) {
-                            $output['selected'] = $driver->getId();
-                        }
-                    }
-                }
-
+            $raceInscriptions = $this->getDoctrine()->getRepository(DriverRace::class)->findBy(['race' => $race]);
+            $drivers = $this->getDoctrine()->getRepository(Driver::class)->findBy(['userGroup'=>$this->getUser()->getUserGroup()]);
+            $driverLight = [];
+            foreach ($drivers as $driver) {
+                $driverLight[$driver->getId()] = $driver->getPsn();
             }
+            foreach ($raceInscriptions as $raceInscription) {
+                if ($raceInscription->getDriver() instanceof Driver && isset($driverLight[$raceInscription->getDriver()->getId()])) {
+                    unset($driverLight[$raceInscription->getDriver()->getId()]);
+                }
+            }
+            $output['list'] = $driverLight;
         }
+        $output['list'] = array_flip($output['list']);
+        ksort($output['list'], SORT_FLAG_CASE|SORT_ASC);
+        $selectedInscription =  $this->getDoctrine()->getRepository(DriverRace::class)->find($request->request->get('inscription'));
 
+        if($selectedInscription instanceof DriverRace){
+            $output['selected']['id'] = $selectedInscription->getDriver()->getId() ;
+            $output['selected']['psn'] = $selectedInscription->getDriver()->getPsn() ;
+        }
         return $this->json($output);
     }
 }

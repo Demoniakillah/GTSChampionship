@@ -6,6 +6,7 @@ namespace App\Form;
 
 use App\Entity\Driver;
 use App\Entity\DriverRace;
+use App\Entity\Pool;
 use App\Entity\Race;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Form\AbstractType;
@@ -25,6 +26,15 @@ class RaceResultsType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $driverRaces = $options['data']->getDriverRaces();
+        $poolId = $options['pool_id'];
+        $driverRaces = $driverRaces->filter(
+            static function ($driverRace) use ($poolId){
+                return
+                    $driverRace->getPool() instanceof Pool
+                    &&
+                    $driverRace->getPool()->getId() === $poolId
+                    ;
+        });
         $iterator = $driverRaces->getIterator();
         $iterator->uasort(function (DriverRace $a, DriverRace$b) {
             return ($a->getFinishPosition() < $b->getFinishPosition()) ? -1 : 1;
@@ -36,7 +46,7 @@ class RaceResultsType extends AbstractType
             CollectionType::class,
             [
                 'entry_type' => RaceResultType::class,
-                'entry_options' => ['driver_race_repository' => $options['driver_race_repository']],
+                'entry_options' => ['pool_id'=>$poolId]
             ]
         );
     }
@@ -47,6 +57,6 @@ class RaceResultsType extends AbstractType
             [
                 'data_class' => Race::class,
             ]
-        )->setRequired('driver_race_repository');
+        )->setRequired('pool_id');
     }
 }

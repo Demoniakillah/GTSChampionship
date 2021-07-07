@@ -18,6 +18,8 @@ class UserController extends MainController
 {
     /**
      * @Route("/", name="user_index", methods={"GET"})
+     * @param UserRepository $userRepository
+     * @return Response
      */
     public function index(UserRepository $userRepository): Response
     {
@@ -38,7 +40,9 @@ class UserController extends MainController
     }
 
     /**
-     * @Route("/{id}", name="user_show", methods={"GET"})
+     * @Route("/{id}", name="user_show", methods={"GET"}, requirements={"id"="\d+"})
+     * @param User $user
+     * @return Response
      */
     public function show(User $user): Response
     {
@@ -51,7 +55,10 @@ class UserController extends MainController
     }
 
     /**
-     * @Route("/{id}/edit", name="user_edit", methods={"GET","POST"})
+     * @Route("/{id}/edit", name="user_edit", methods={"GET","POST"}, requirements={"id"="\d+"})
+     * @param Request $request
+     * @param User $user
+     * @return Response
      */
     public function edit(Request $request, User $user): Response
     {
@@ -59,7 +66,10 @@ class UserController extends MainController
     }
 
     /**
-     * @Route("/{id}", name="user_delete", methods={"POST"})
+     * @Route("/{id}", name="user_delete", methods={"POST"}, requirements={"id"="\d+"})
+     * @param Request $request
+     * @param User $user
+     * @return Response
      */
     public function delete(Request $request, User $user): Response
     {

@@ -18,9 +18,6 @@ class RaceCarConfigurationType extends AbstractType
             ->add('parameter')
             ->add('value')
         ;
-        if($options['data']->getRace() instanceof Race){
-            dd('COUCOCUCOU');
-        }
     }
 
     public function configureOptions(OptionsResolver $resolver)

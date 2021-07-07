@@ -31,9 +31,22 @@ services:
         resource: '../src/TwigExtension/'
         tags: ['twig.extension']
 
+    App\TwigExtension\RaceResult:
+        calls:
+            - [setRaceRepository,['@App\Repository\RaceRepository']]
+        tags: ['twig.extension']
+
     App\ErrorListener:
         tags:
             - {name: kernel.event_listener, event: kernel.exception}
+
+    App\TrafficListener:
+        calls:
+            - [ setLogger,["@monolog.logger"] ]
+            - [ setEm,["@doctrine.orm.entity_manager"] ]
+        tags:
+            - {name: kernel.event_listener, event: kernel.terminate}
+
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

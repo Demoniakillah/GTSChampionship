@@ -13,8 +13,6 @@ use App\Entity\Race;
 use App\Entity\Team;
 use App\Form\DriverRaceType;
 use App\Repository\DriverRaceRepository;
-use App\Repository\TeamRepository;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -30,6 +28,19 @@ use App\Controller\Advanced\DriverRaceController as BaseController;
  */
 class DriverRaceController extends BaseController
 {
+    protected function getFormOptions(): array
+    {
+        return ['user_group'=>$this->getUser()->getUserGroup()];
+    }
+
+    /**
+     * @return string
+     */
+    protected function getName(): string
+    {
+        return 'admin_driver_race';
+    }
+
     protected function getFormTypeClass(): string
     {
         return DriverRaceType::class;
@@ -47,6 +58,8 @@ class DriverRaceController extends BaseController
 
     /**
      * @Route("/index",methods={"GET"}, name="driver_race_admin_index")
+     * @param DriverRaceRepository $driverRaceRepository
+     * @return Response
      */
     public function index(DriverRaceRepository $driverRaceRepository): Response
     {
@@ -76,54 +89,41 @@ class DriverRaceController extends BaseController
      */
     protected function getDriverInscriptionByRaceByPool(): array
     {
-        $races = $this->getDoctrine()->getRepository(Race::class)->findAll();
-        $drivers = $this->getDoctrine()->getRepository(Driver::class)->findBy([], ['psn' => 'asc']);
+        $races = $this->getDoctrine()->getRepository(Race::class)->findBy(['userGroup'=>$this->getUser()->getUserGroup()]);
+        $drivers = $this->getDoctrine()->getRepository(Driver::class)->findBy(['userGroup'=>$this->getUser()->getUserGroup()], ['psn' => 'asc']);
         foreach ($races as $race) {
             $raceInscriptions = $this->getDoctrine()->getRepository(DriverRace::class)->findByRace($race);
-            $defaultDriverCar = current(is_array(current($race->getCars())) ? current($race->getCars()) : []);
             foreach ($drivers as $driver) {
-                $found = false;
                 foreach ($raceInscriptions as $raceInscription) {
-                    if ($raceInscription->getDriver() instanceof Driver && $raceInscription->getDriver()->getId(
-                        ) === $driver->getId()) {
-                        $found = $raceInscription;
+                    if ($raceInscription->getDriver() instanceof Driver && $raceInscription->getDriver()->getId() === $driver->getId()) {
                         break;
                     }
-                }
-                if (!$found) {
-                    $raceInscription = new DriverRace();
-                    $raceInscription
-                        ->setRace($race)
-                        ->setDriver($driver);
-                    if ($driver->getPool() instanceof Pool) {
-                        $raceInscription->setPool($driver->getPool());
-                    }
-                    if ($defaultDriverCar instanceof Car) {
-                        $raceInscription->setCar($defaultDriverCar);
-                    }
-                    $this->getDoctrine()->getManager()->persist($raceInscription);
                 }
             }
         }
         $this->getDoctrine()->getManager()->flush();
         $output = [];
         foreach ($races as $i => $race) {
-            $raceInscriptions = $this->getDoctrine()->getRepository(DriverRace::class)->findByRace($race,['startPosition'=>'asc']);
+            $raceInscriptions = $this->getDoctrine()->getRepository(DriverRace::class)->findByRace($race, ['startPosition' => 'asc']);
             $output[$i] = ['race' => $race];
             foreach ($raceInscriptions as $raceInscription) {
                 if ($raceInscription->getPool() instanceof Pool) {
                     if (!isset($output[$i]['pools'][$raceInscription->getPool()->getId()])) {
-                        $output[$i]['pools'][$raceInscription->getPool()->getId()]['pool'] = $raceInscription->getPool(
-                        );
+                        $output[$i]['pools'][$raceInscription->getPool()->getId()]['pool'] = $raceInscription->getPool();
                     }
                     $output[$i]['pools'][$raceInscription->getPool()->getId()]['inscriptions'][] = $raceInscription;
                 } else {
                     $output[$i]['empty_pool'][] = $raceInscription;
                 }
             }
+            if (isset($output[$i]['pools']) && is_array($output[$i]['pools'])) {
+                uasort($output[$i]['pools'], static function ($a, $b) {
+                    return $a['pool']->getPriority() > $b['pool']->getPriority();
+                });
+            }
         }
         $pools = $this->getDoctrine()->getRepository(Pool::class)->findBy(
-            [],
+            ['userGroup'=>$this->getUser()->getUserGroup()],
             ['priority' => 'asc']
         );
         foreach ($output as $i => $raceInfos) {
@@ -134,16 +134,16 @@ class DriverRaceController extends BaseController
             }
         }
 
-        $passed = array_filter($output, static function ($race){
+        $passed = array_filter($output, static function ($race) {
             return $race['race']->getDate() < new \DateTime();
         });
-        uasort($passed, static function($a,$b){
+        uasort($passed, static function ($a, $b) {
             return $a['race']->getDate() < $b['race']->getDate();
         });
-        $next = array_filter($output, static function ($race){
+        $next = array_filter($output, static function ($race) {
             return $race['race']->getDate() > new \DateTime();
         });
-        uasort($next, static function($a,$b){
+        uasort($next, static function ($a, $b) {
             return $a['race']->getDate() > $b['race']->getDate();
         });
 

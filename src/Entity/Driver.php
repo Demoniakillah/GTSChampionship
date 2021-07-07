@@ -5,9 +5,16 @@ namespace App\Entity;
 use App\Repository\DriverRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 
 /**
  * @ORM\Entity(repositoryClass=DriverRepository::class)
+ * @ORM\Table(uniqueConstraints={
+ *     @UniqueConstraint(
+ *              name="unique_race_name_by_account",
+ *              columns={"user_group","psn"}
+ *          )
+ *     })
  */
 class Driver
 {
@@ -21,26 +28,26 @@ class Driver
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      */
-    private $psn;
+    private string $psn;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $name;
+    private ?string $name;
 
     /**
      * @var Team
-     * @ORM\ManyToOne(targetEntity="App\Entity\Team", inversedBy="id")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Team", inversedBy="drivers")
      * @ORM\JoinColumn(name="team", referencedColumnName="id", onDelete="SET NULL")
      */
-    private $team;
+    private ?Team $team;
 
     /**
      * @var Pool
      * @ORM\ManyToOne(targetEntity="App\Entity\Pool", inversedBy="drivers")
      * @ORM\JoinColumn(name="pool",referencedColumnName="id", onDelete="SET NULL")
      */
-    private $pool;
+    private ?Pool $pool;
 
     /**
      * @var DriverRace[]
@@ -48,11 +55,42 @@ class Driver
      */
     private $races;
 
+    /**
+     * @var UserGroup
+     * @ORM\ManyToOne(targetEntity="App\Entity\UserGroup", inversedBy="races")
+     * @ORM\JoinColumn(name="user_group", referencedColumnName="id")
+     */
+    private UserGroup $userGroup;
+
+    /**
+     * @return string
+     */
     public function __toString():string
     {
         return $this->psn;
     }
 
+    /**
+     * @return UserGroup
+     */
+    public function getUserGroup(): UserGroup
+    {
+        return $this->userGroup;
+    }
+
+    /**
+     * @param UserGroup $userGroup
+     * @return Driver
+     */
+    public function setUserGroup(UserGroup $userGroup): Driver
+    {
+        $this->userGroup = $userGroup;
+        return $this;
+    }
+
+    /**
+     * Driver constructor.
+     */
     public function __construct()
     {
         $this->races = new ArrayCollection();
@@ -106,16 +144,26 @@ class Driver
         return $this;
     }
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string
+     */
     public function getPsn(): string
     {
         return $this->psn;
     }
 
+    /**
+     * @param string $psn
+     * @return $this
+     */
     public function setPsn(string $psn): self
     {
         $this->psn = $psn;
@@ -123,11 +171,18 @@ class Driver
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
+    /**
+     * @param string|null $name
+     * @return $this
+     */
     public function setName(?string $name): self
     {
         $this->name = $name;
@@ -135,11 +190,18 @@ class Driver
         return $this;
     }
 
+    /**
+     * @return Team|null
+     */
     public function getTeam(): ?Team
     {
         return $this->team;
     }
 
+    /**
+     * @param Team|null $team
+     * @return $this
+     */
     public function setTeam(?Team $team): self
     {
         $this->team = $team;

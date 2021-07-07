@@ -18,6 +18,8 @@ class CarController extends MainController
 {
     /**
      * @Route("/", name="car_index", methods={"GET"})
+     * @param MakerRepository $makerRepository
+     * @return Response
      */
     public function index(MakerRepository $makerRepository): Response
     {
@@ -28,6 +30,8 @@ class CarController extends MainController
 
     /**
      * @Route("/new", name="car_new", methods={"GET","POST"})
+     * @param Request $request
+     * @return Response
      */
     public function new(Request $request): Response
     {
@@ -36,6 +40,8 @@ class CarController extends MainController
 
     /**
      * @Route("/{id}", name="car_show", methods={"GET"})
+     * @param Car $car
+     * @return Response
      */
     public function show(Car $car): Response
     {
@@ -54,6 +60,9 @@ class CarController extends MainController
 
     /**
      * @Route("/{id}", name="car_delete", methods={"POST"})
+     * @param Request $request
+     * @param Car $car
+     * @return Response
      */
     public function delete(Request $request, Car $car): Response
     {

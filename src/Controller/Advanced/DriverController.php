@@ -17,6 +17,8 @@ class DriverController extends MainController
 {
     /**
      * @Route("/", name="driver_index", methods={"GET"})
+     * @param DriverRepository $driverRepository
+     * @return Response
      */
     public function index(DriverRepository $driverRepository): Response
     {
@@ -62,6 +64,7 @@ class DriverController extends MainController
      */
     public function new(Request $request): Response
     {
+        dd($request);
         return $this->updateAction(new Driver(), $request);
     }
 

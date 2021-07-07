@@ -4,14 +4,18 @@
     {% for driver in drivers %}
         <div class="col" style="white-space: nowrap; border: blue dotted 1px; margin: 3px">
             <div class="col"><strong>psn:</strong> {{ driver.psn }}</div>
-            {% if driver.name is not null %}<div class="col"><strong>name:</strong> {{ driver.name }}</div>{% endif %}
-            {% if driver.team is not null %}<div class="col"><strong>team:</strong> {{ driver.team }}</div>{% endif %}
-            {% if driver.pool is not null %}<div class="col"><strong>pool:</strong> {{ driver.pool }}</div>{% endif %}
+            {% if driver.name is not null %}
+                <div class="col"><strong>name:</strong> {{ driver.name }}</div>{% endif %}
+            {% if driver.team is not null %}
+                <div class="col"><strong>team:</strong> {{ driver.team }}</div>{% endif %}
+            {% if driver.pool is not null %}
+                <div class="col"><strong>pool:</strong> {{ driver.pool }}</div>{% endif %}
             <div class="col">
                 <a class="get_form_button bi bi-pencil-square text-success"
                    data-token="{{ csrf_token('edit'~driver.id) }}"
                    data-form_url="{{ path('admin_driver_edit',{'id':driver.id}) }}" title="edit driver"></a>
-                <a class="bi bi-clipboard-check text-primary" title="driver stats"></a>
+                <a class="bi bi-clipboard-check text-primary driver_stats" title="driver stats"
+                   data-url="{{ path('admin_driver_stats',{'id':driver.id}) }}"></a>
                 <a class="remove_element bi bi-trash text-danger" data-token="{{ csrf_token('delete'~driver.id) }}"
                    data-remove_url="{{ path('driver_delete',{'id':driver.id}) }}" title="remove driver"></a>
             </div>
@@ -21,3 +25,4 @@
     {% endfor %}
 </div>
 <script src="{{ asset('admin_form.js') }}"></script>
+<script src="{{ asset('driver_stats.js') }}"></script>

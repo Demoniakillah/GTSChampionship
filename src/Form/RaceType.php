@@ -2,12 +2,15 @@
 
 namespace App\Form;
 
+use App\Entity\Pool;
 use App\Entity\Race;
 use App\Entity\RaceParameter;
 use App\Repository\CountryRepository;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -15,22 +18,56 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class RaceType extends AbstractType
 {
+    protected function getPoolElementValue(Pool $pool, $list)
+    {
+        $data = false;
+        foreach ($list as $poolElement) {
+            if ($poolElement->getPool() instanceof Pool && $poolElement->getPool()->getId() === $pool->getId()) {
+                $data = $poolElement->getValue();
+                break;
+            }
+        }
+
+        return $data;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
             ->add('name')
             ->add('date')
-            ->add('casting')
-            ->add('host')
+            ->add('isEndurance')
+            ->add('imageUrl')
             ->add('moreDetails')
             ->add('livery');
+
+        foreach ($options['pool_repository']->findBy(['userGroup'=>$options['user_group']], ['priority' => 'asc']) as $pool) {
+            $builder->add('pool_host_' . $pool->getId(), TextType::class, [
+                'required'=>true,
+                'mapped' => false,
+                'label' => 'Pool host: ' . $pool->getname(),
+                'data' => $this->getPoolElementValue($pool, $options['data']->getPoolHosts())
+            ]);
+            $builder->add('pool_casting_' . $pool->getId(), TextType::class, [
+                'required'=>false,
+                'mapped' => false,
+                'label' => 'Pool casting: ' . $pool->getname(),
+                'data' => $this->getPoolElementValue($pool, $options['data']->getPoolCastings())
+            ]);
+            $builder->add('pool_saloon_label_' . $pool->getId(), TextType::class, [
+                'required'=>false,
+                'mapped' => false,
+                'label' => 'Pool saloon: ' . $pool->getname(),
+                'data' => $this->getPoolElementValue($pool, $options['data']->getPoolSaloonLabels())
+            ]);
+        }
         $countries = [];
         foreach ($options['country_repository']->findAll() as $country) {
             foreach ($country->getTracks() as $track) {
                 $countries[$country->getName()][] = $track;
             }
         }
-        $builder->add('track',null,[
+        $builder->add('track', null, [
             'choices' => $countries
         ]);
         $cars = [];
@@ -52,34 +89,58 @@ class RaceType extends AbstractType
         foreach ($options['data']->getConfigurations() as $configuration) {
             $configurations[$configuration->getParameter()->getId()] = $configuration->getValue();
         }
-        foreach ($options['race_parameters_repository']->findBy([], ['id' => 'asc']) as $raceParameter) {
+        foreach ($options['race_parameters_repository']->findBy([], ['name' => 'asc']) as $raceParameter) {
             if ($raceParameter instanceof RaceParameter) {
-                if ($raceParameter->getType() === 'int') {
+                if ($raceParameter->getType() === 'bool') {
                     $builder->add(
-                        "race_parameter_".$raceParameter->getId(),
+                        "race_parameter_" . $raceParameter->getId(),
+                        CheckboxType::class,
+                        [
+                            'mapped' => false,
+                            'label' => $raceParameter->getName(),
+                            'data' => (bool)($configurations[$raceParameter->getId()] ?? $raceParameter->getAvailableValues()),
+                        ]
+                    );
+                }
+                if ($raceParameter->getType() === 'int') {
+                    if ($raceParameter->getName() === 'Laps') {
+                        $class = 'laps';
+                    } else {
+                        $class = '';
+                    }
+                    $builder->add(
+                        "race_parameter_" . $raceParameter->getId(),
                         IntegerType::class,
                         [
                             'mapped' => false,
                             'label' => $raceParameter->getName(),
-                            'data' => $configurations[$raceParameter->getId(
-                                )] ?? (int)$raceParameter->getAvailableValues(),
+                            'data' => $configurations[$raceParameter->getId()] ?? (int)$raceParameter->getAvailableValues(),
+                            'attr' => ['class' => $class]
                         ]
                     );
                 }
                 if ($raceParameter->getType() === 'string') {
+                    if ($raceParameter->getName() === 'Laps') {
+                        $class = 'laps';
+                    } elseif ($raceParameter->getName() === 'Time') {
+                        $class = 'endurance_time';
+                    } else {
+                        $class = '';
+                    }
                     $builder->add(
-                        "race_parameter_".$raceParameter->getId(),
+                        "race_parameter_" . $raceParameter->getId(),
                         null,
                         [
                             'mapped' => false,
                             'label' => $raceParameter->getName(),
                             'data' => $configurations[$raceParameter->getId()] ?? $raceParameter->getAvailableValues(),
+                            'attr' => ['class' => $class]
                         ]
                     );
                 }
                 if ($raceParameter->getType() === 'array') {
                     $builder->add(
-                        "race_parameter_".$raceParameter->getId(),
+                        "race_parameter_" . $raceParameter->getId(),
                         ChoiceType::class,
                         [
                             'mapped' => false,
@@ -100,9 +161,10 @@ class RaceType extends AbstractType
                 'data_class' => Race::class,
             ]
         )
+            ->setRequired('user_group')
             ->setRequired('race_parameters_repository')
             ->setRequired('maker_repository')
-            ->setRequired('country_repository')
-        ;
+            ->setRequired('pool_repository')
+            ->setRequired('country_repository');
     }
 }

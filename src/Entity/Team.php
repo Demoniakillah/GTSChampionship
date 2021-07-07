@@ -5,9 +5,16 @@ namespace App\Entity;
 use App\Repository\TeamRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 
 /**
  * @ORM\Entity(repositoryClass=TeamRepository::class)
+ * @ORM\Table(uniqueConstraints={
+ *     @UniqueConstraint(
+ *              name="unique_race_name_by_account",
+ *              columns={"user_group","name"}
+ *          )
+ *     })
  */
 class Team
 {
@@ -29,6 +36,13 @@ class Team
      */
     private $drivers;
 
+    /**
+     * @var UserGroup
+     * @ORM\ManyToOne(targetEntity="App\Entity\UserGroup", inversedBy="races")
+     * @ORM\JoinColumn(name="user_group", referencedColumnName="id")
+     */
+    private UserGroup $userGroup;
+
     public function __toString():string
     {
         return $this->name;
@@ -42,6 +56,24 @@ class Team
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * @return UserGroup
+     */
+    public function getUserGroup(): UserGroup
+    {
+        return $this->userGroup;
+    }
+
+    /**
+     * @param UserGroup $userGroup
+     * @return Team
+     */
+    public function setUserGroup(UserGroup $userGroup): Team
+    {
+        $this->userGroup = $userGroup;
+        return $this;
     }
 
     /**

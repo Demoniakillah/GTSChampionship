@@ -31,7 +31,9 @@ class TermsController extends BaseController
      */
     public function new(Request $request): Response
     {
-        return $this->updateAction(new Terms(), $request, true, true);
+        $term = new Terms();
+        $term->setUserGroup($this->getUser()->getUserGroup());
+        return $this->updateAction($term, $request, true, true);
     }
 
     /**
@@ -47,11 +49,22 @@ class TermsController extends BaseController
 
     /**
      * @Route("/index",methods={"GET"}, name="terms_admin_index")
+     * @param TermsRepository $termsRepository
+     * @return Response
      */
     public function index(TermsRepository $termsRepository): Response
     {
+        $term = $termsRepository->findBy(['userGroup' => $this->getUser()->getUserGroup()],[],1);
+        if(empty($term)){
+            $term = new Terms();
+            $term->setUserGroup($this->getUser()->getUserGroup());
+            $this->getDoctrine()->getManager()->persist($term);
+            $this->getDoctrine()->getManager()->flush();
+        } else {
+            $term = current($term);
+        }
         return $this->render('admin/terms_index.html.twig', [
-            'terms' => $termsRepository->findBy([],[],1),
+            'terms' => $term,
             'form_url' => $this->generateUrl('admin_terms_new')
         ]);
     }

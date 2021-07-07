@@ -40,6 +40,12 @@ class Menu
     private $role = 'ROLE_USER';
 
     /**
+     * @var string
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private ?string $classDependencies = '';
+
+    /**
      * @return string
      */
     public function getRole(): string
@@ -103,6 +109,24 @@ class Menu
     {
         $this->url = $url;
 
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getClassDependencies(): ?string
+    {
+        return $this->classDependencies;
+    }
+
+    /**
+     * @param string $classDependencies
+     * @return Menu
+     */
+    public function setClassDependencies(string $classDependencies): Menu
+    {
+        $this->classDependencies = $classDependencies;
         return $this;
     }
 }

@@ -32,7 +32,7 @@ class RaceConfiguration
 
     /**
      * @var RaceParameter
-     * @ORM\ManyToOne(targetEntity="App\Entity\RaceParameter")
+     * @ORM\ManyToOne(targetEntity="App\Entity\RaceParameter"))
      * @ORM\JoinColumn(name="parameter", referencedColumnName="id")
      */
     private $parameter;

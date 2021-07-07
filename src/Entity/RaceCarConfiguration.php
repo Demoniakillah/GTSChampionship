@@ -21,34 +21,34 @@ class RaceCarConfiguration
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private int $id;
 
     /**
      * @var Race
      * @ORM\ManyToOne(targetEntity="App\Entity\Race", inversedBy="carConfigurations")
      * @ORM\JoinColumn(name="race", referencedColumnName="id")
      */
-    private $race;
+    private Race $race;
 
     /**
      * @var Car
      * @ORM\ManyToOne(targetEntity="App\Entity\Car")
      * @ORM\JoinColumn(name="car", referencedColumnName="id")
      */
-    private $car;
+    private Car $car;
 
     /**
      * @var RaceCarParameter
      * @ORM\ManyToOne(targetEntity="App\Entity\RaceCarParameter")
      * @ORM\JoinColumn(name="parameter", referencedColumnName="id")
      */
-    private $parameter;
+    private RaceCarParameter $parameter;
 
     /**
      * @var integer
      * @ORM\Column(type="integer")
      */
-    private $value = 0;
+    private int $value = 0;
 
     /**
      * @return int

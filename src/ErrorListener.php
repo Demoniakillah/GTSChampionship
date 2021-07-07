@@ -4,6 +4,7 @@
 namespace App;
 
 
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 
@@ -18,6 +19,13 @@ class ErrorListener
 {
     public function onKernelException(ExceptionEvent $event):void
     {
-        //$event->setResponse(new Response($event->getThrowable()->getMessage()));
+        if($_ENV['APP_ENV'] === 'prod') {
+            if($event->getThrowable() instanceof UniqueConstraintViolationException){
+                $message = 'Duplicate entry';
+            } else {
+                $message =   $event->getThrowable()->getMessage();
+            }
+            $event->setResponse(new Response($message));
+        }
     }
 }

@@ -1,5 +1,7 @@
 <h1>Races</h1>
 <a class="get_form_button btn btn-link text-primary" data-form_url="{{ form_url }}">Create new event</a>
+
+<h2>Next events</h2>
 <table class="table table-striped">
     <thead>
     <tr>
@@ -8,13 +10,13 @@
         <th>Countdown</th>
         <th>Track</th>
         <th>Cars</th>
+        <th>Share</th>
+        <th>Inscription link</th>
         <th></th>
     </tr>
     </thead>
     <tbody>
-    <tr>
-        <th colspan="6" style="text-align: center; font-size: 1.3rem; color: #198754">Next events</th>
-    </tr>
+    {% set passed=false %}
     {% for race in races.next %}
         {{ include('admin/race_table.html.twig') }}
     {% else %}
@@ -22,9 +24,23 @@
             <td colspan="7">no records found</td>
         </tr>
     {% endfor %}
+    </tbody>
+</table>
+
+<h2>Passed events</h2>
+<table class="table table-striped">
+    <thead>
     <tr>
-        <th colspan="6" style="text-align: center; font-size: 1.3rem; color: #999999"><i>Passed events</i></th>
+        <th>Name</th>
+        <th>Date</th>
+        <th>Track</th>
+        <th>Cars</th>
+        <th>Share</th>
+        <th></th>
     </tr>
+    </thead>
+    <tbody>
+    {% set passed=true %}
     {% for race in races.passed %}
         {{ include('admin/race_table.html.twig') }}
     {% else %}
@@ -34,6 +50,9 @@
     {% endfor %}
     </tbody>
 </table>
+
+
+
 <script src="{{ asset('admin_form.js') }}"></script>
 <script>
     $(document).ready(function () {
@@ -75,7 +94,7 @@
                     $.confirm({
                         title: '',
                         content: html,
-                        useBoostrap: false,
+                        useBootstrap: false,
                         width: '100%',
                         boxWidth: '100%',
                         buttons: {
@@ -118,19 +137,56 @@
         $('.race_results').on('click', function () {
             let url = $(this).data('result_table_url')
             $.get({
-                url: url,
-                success: function (html) {
-                    $.confirm({
-                        title: '',
-                        content: html,
-                        useBootstrap: false,
-                        boxWidth: '100%',
-                        width: '100%',
-                        buttons:{
-                            close: {
-                                btnClass: 'btn-blue'
+                url: "{{ path('api_get_pools') }}",
+                dataType: 'json',
+                error: function (errorMsg) {
+                    $.alert({
+                        title: 'Error!',
+                        content: errorMsg.responseText
+                    })
+                },
+                success: function (data) {
+                    let button = document.createElement('span')
+                    button.classList.add('btn')
+                    button.classList.add('btn-link')
+                    button.append('select')
+                    let poolSelect = document.createElement('select')
+                    poolSelect.classList.add('form-select')
+                    $.each(data, function (i, pool) {
+                        let option = document.createElement('option')
+                        option.value = pool.id
+                        option.append(pool.name)
+                        poolSelect.append(option)
+                    })
+                    let content = document.createElement('div')
+                    content.append(poolSelect, button)
+                    let poolSelectDialog = $.dialog({
+                        title: 'Select pool',
+                        content: content
+                    })
+                    $(button).on('click', function () {
+                        let poolId = $(poolSelect).val()
+                        poolSelectDialog.close()
+                        $.get({
+                            url: url + '/' + poolId,
+                            success: function (html) {
+                                $.confirm({
+                                    title: '',
+                                    content: html,
+                                    useBootstrap: false,
+                                    boxWidth: '100%',
+                                    width: '100%',
+                                    buttons: {
+                                        close: {
+                                            btnClass: 'btn-blue',
+                                            action: function () {
+                                                reloadContent()
+                                            }
+                                        }
+                                    }
+                                })
                             }
-                        }
+                        })
                     })
                 }
             })

@@ -23,7 +23,7 @@ class RaceParameterController extends MainController
         return $this->render(
             'race_parameter/index.html.twig',
             [
-                'race_parameters' => $raceParameterRepository->findAll(),
+                'race_parameters' => $raceParameterRepository->findBy([],['name'=>'asc']),
             ]
         );
     }

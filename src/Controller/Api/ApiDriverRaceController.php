@@ -8,19 +8,117 @@ use App\Entity\DriverRace;
 use App\Entity\Pool;
 use App\Entity\PoolConfiguration;
 use App\Entity\Race;
-use Doctrine\Common\Collections\ArrayCollection;
+use App\Repository\CarRepository;
+use App\Repository\DriverRaceRepository;
+use App\Repository\DriverRepository;
+use App\Repository\PoolRepository;
+use App\Repository\RaceRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @Route("/api/driver_race")
  */
 class ApiDriverRaceController extends AbstractController
 {
+    /**
+     * @Route("/quick/manage/data/remove", name="api_delete_driver_race_quick_data", methods={"POST"})
+     * @param Request $request
+     * @param DriverRaceRepository $driverRaceRepository
+     * @param EntityManagerInterface $em
+     * @return Response
+     */
+    public function remove(Request $request, DriverRaceRepository $driverRaceRepository, EntityManagerInterface $em)
+    {
+        if($request->request->get('id')) {
+            $inscription = $driverRaceRepository->find($request->request->get('id'));
+            if ($inscription instanceof DriverRace) {
+                $em->remove($inscription);
+                $em->flush();
+            }
+        }
+        return new Response('ok');
+    }
+
+    /**
+     * @Route("/quick/manage/data/", name="api_set_driver_race_quick_data", methods={"POST"})
+     * @param Request $request
+     * @param CarRepository $carRepository
+     * @param PoolRepository $poolRepository
+     * @param DriverRepository $driverRepository
+     * @param DriverRaceRepository $driverRaceRepository
+     * @param RaceRepository $raceRepository
+     * @param EntityManagerInterface $em
+     * @return Response
+     */
+    public function setQuickRaceInscription(
+        Request $request,
+        CarRepository $carRepository,
+        PoolRepository $poolRepository,
+        DriverRepository $driverRepository,
+        DriverRaceRepository $driverRaceRepository,
+        RaceRepository $raceRepository,
+        EntityManagerInterface $em
+    ): Response
+    {
+        $inscription = null;
+        if($request->request->get('id')) {
+            $inscription = $driverRaceRepository->find($request->request->get('id'));
+        }
+        if (!$inscription instanceof DriverRace) {
+            $inscription = new DriverRace();
+        }
+            $inscription
+                ->setCar($carRepository->find($request->request->get('car')))
+                ->setRace($raceRepository->find($request->request->get('race')))
+                ->setStartPosition($request->request->get('position'))
+                ->setPool($poolRepository->find($request->request->get('pool')))
+                ->setDriver($driverRepository->find($request->request->get('driver')));
+            $em->persist($inscription);
+
+        foreach ($inscription->getRace()->getDriverRaces() as $driverRace) {
+            $driverRace->setStartPosition(array_search((int)$driverRace->getDriver()->getId(), array_map('intval', $request->request->get('start_positions')), true));
+        }
+        $em->flush();
+        return new Response($inscription->getId());
+    }
+
+    /**
+     * @Route("/quick/manage/data/{id}", name="api_get_driver_race_quick_data", methods={"GET"}, requirements={"id"="\d+"})
+     * @param Race $race
+     * @return Response
+     */
+    public function getQuickRaceInscriptionManagementData(Race $race): Response
+    {
+        $driversIndexed = [];
+        $drivers = $this->getDoctrine()->getRepository(Driver::class)->findBy(['userGroup' => $this->getUser()->getUserGroup()], ['psn' => 'asc']);
+        foreach ($drivers as $driver) {
+            $driversIndexed[$driver->getId()] = $driver;
+        }
+        foreach ($race->getDriverRaces() as $inscription) {
+            unset($driversIndexed[$inscription->getDriver()->getId()]);
+        }
+        $poolDrivers = [];
+        foreach ($this->getDoctrine()->getRepository(Pool::class)->findBy(['userGroup' => $this->getUser()->getUserGroup()], ['priority' => 'asc']) as $pool) {
+            $poolDrivers[$pool->getName()] = ['pool' => $pool, 'drivers' => []];
+        }
+        foreach ($race->getDriverRaces() as $inscription) {
+            if ($inscription->getPool() instanceof Pool) {
+                $poolDrivers[$inscription->getPool()->getName()]['drivers'][] = $inscription;
+            }
+        }
+
+        return $this->render('admin/quick_manage_race_inscriptions.html.twig', [
+            'unsubscribed_drivers' => $driversIndexed,
+            'pool_drivers' => $poolDrivers,
+            'race' => $race
+        ]);
+    }
+
     /**
      * @Route("/finish/positions", name="api_update_driver_race_finish_positions", methods={"POST"})
      */
@@ -39,6 +137,7 @@ class ApiDriverRaceController extends AbstractController
                 $pool = $this->getDoctrine()->getRepository(Pool::class)->find($data['data']['pool']);
                 if ($pool instanceof Pool) {
                     $driverRace->setPool($pool);
+                    $driverRace->getDriver()->setPool($pool);
                 }
                 $car = $this->getDoctrine()->getRepository(Car::class)->find($data['data']['car']);
                 if ($car instanceof Car) {
@@ -71,9 +170,12 @@ class ApiDriverRaceController extends AbstractController
                         $pool = null;
                     }
                     if ($inscriptionEntity instanceof DriverRace) {
-                        $inscriptionEntity->setPool($pool)->setStartPosition((int)$inscription['position']);
-                        if ($pool instanceof Pool && $inscriptionEntity->getDriver() instanceof Driver) {
-                            $inscriptionEntity->getDriver()->setPool($pool);
+                        $inscriptionEntity->setStartPosition((int)$inscription['position']);
+                        if ($pool instanceof Pool) {
+                            $inscriptionEntity->setPool($pool);
+                            if($inscriptionEntity->getDriver() instanceof Driver) {
+                                $inscriptionEntity->getDriver()->setPool($pool);
+                            }
                         }
                         $i++;
                     }

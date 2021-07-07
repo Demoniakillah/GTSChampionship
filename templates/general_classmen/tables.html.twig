@@ -1,0 +1,101 @@
+{% set generalRanking = generalRanking(id) %}
+<h2>General</h2>
+<table class="table table-striped">
+    <tbody>
+    <tr>
+        <th>Winner</th>
+        <td>{{ generalRanking.best_driver }} <span
+                    class="text-success">({{ generalRanking.driver_progressions[generalRanking.best_driver]*100~'%' }})</span>
+        </td>
+    </tr>
+    <tr>
+        <th>Best Team</th>
+        <td>{{ generalRanking.best_team }}</td>
+    </tr>
+    <tr>
+        <th>Best Maker</th>
+        <td>{{ generalRanking.best_maker }}</td>
+    </tr>
+    <tr>
+        <th>Medail of Honor - Driver</th>
+        <td>{{ generalRanking.best_driver_progression }} <span
+                    class="text-success">({{ (generalRanking.driver_progressions[generalRanking.best_driver_progression]*100)| round(2,'floor') ~'%' }})</span>
+        </td>
+    </tr>
+    <tr>
+        <th>Medail of Honor - Team</th>
+        <td>{{ generalRanking.best_team_progression }} <span
+                    class="text-success">({{ (generalRanking.team_progressions[generalRanking.best_team_progression]*100)| round(2,'floor') ~'%' }})</span>
+    </tr>
+    </tbody>
+</table>
+<h2>Driver Ranking</h2>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Rank</th>
+        <th>Driver</th>
+        <th>Team</th>
+        <th>Pools</th>
+        <th>Progression</th>
+        <th>Points</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for driver, data in generalRanking.ranking %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ driver }}</td>
+            <td>{{ generalRanking.team_driver[driver] }}</td>
+            <td>
+                {% for pool in data.pool_evolution %}
+                    {% if loop.index > 1 %}
+                        ->
+                    {% endif %}
+                    {{ pool }}
+                {% endfor %}
+            </td>
+            <td>{{ (generalRanking.driver_progressions[driver]*100) | round(2,'floor') ~'%'}}</td>
+            <td>{{ data.points}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<h2>Team Ranking</h2>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Rank</th>
+        <th>Team</th>
+        <th>Points</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for team, data in generalRanking.teams %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ team }}</td>
+            <td>{{ data.points }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<h2>Maker Ranking</h2>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Rank</th>
+        <th>Maker</th>
+        <th>Points</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for maker, points in generalRanking.maker_points %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ maker }}</td>
+            <td>{{ points }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

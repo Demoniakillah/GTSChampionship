@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\DriverRaceRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 
 /**
  * @ORM\Entity(repositoryClass=DriverRaceRepository::class)
@@ -13,6 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
  *              columns={"driver","race"}
  *          )
  *     })
+ * @ORM\HasLifecycleCallbacks()
  */
 class DriverRace
 {
@@ -80,7 +82,7 @@ class DriverRace
 
     /**
      * @var Driver
-     * @ORM\ManyToOne(targetEntity="App\Entity\Driver", inversedBy="drivers")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Driver", inversedBy="races")
      * @ORM\JoinColumn(name="driver", referencedColumnName="id")
      */
     private $driver;
@@ -322,5 +324,119 @@ class DriverRace
         $this->penalty = $penalty;
 
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isValid(): bool
+    {
+        return
+            $this->isValidInscription()
+            &&
+            $this->finishStatus === self::FINISHED
+            &&
+            is_int($this->startPosition)
+            &&
+            is_int($this->finishPosition)
+            //&&
+            //$this->bestLap !== '00:00:000'
+            //&&
+            //$this->bestLap !== '00:00:000'
+            ;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isValidInscription(): bool
+    {
+        return
+            $this->pool instanceof Pool
+            &&
+            $this->driver instanceof Driver
+            &&
+            $this->car instanceof Car;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isValidButMissing(): bool
+    {
+        return
+            $this->isValidInscription()
+            &&
+            $this->isMissing();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isValidButDisconnected(): bool
+    {
+        return
+            $this->isValidInscription()
+            &&
+            $this->isDisconnected()
+            &&
+            is_int($this->startPosition);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDisconnected(): bool
+    {
+        return $this->finishStatus === self::DISCONNECTED;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isMissing(): bool
+    {
+        return $this->finishStatus === self::MISSING;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPoints(): int
+    {
+        if ($this->isValid()) {
+            return $this->pool->getPoints()[$this->finishPosition] + $this->bonus - $this->penalty;
+        }
+        return $this->pool->getPoints()[count($this->pool->getPoints()) - 1] + $this->bonus - $this->penalty;
+    }
+
+    public function getFinalPosition(): int
+    {
+        $results = [];
+        foreach ($this->getRace()->getDriverRaces() as $driverRace){
+            $results[] = ['psn'=>$driverRace->getDriver()->getPsn(),'points'=>$driverRace->getPoints()];
+        }
+        usort($results, static function($a,$b){
+            return $a['points'] < $b['points'];
+        });
+        $psn = $this->getDriver()->getPsn();
+        $results = array_filter($results, static function($a) use ($psn){
+            return $a['psn'] === $psn;
+        });
+        return key($results);
+    }
+
+    /**
+     * @ORM\PrePersist()
+     */
+    public function setStartPositionOnPersist():void
+    {
+        $startPosition = 0;
+        foreach ($this->race->getDriverRaces() as $driverRace){
+            if($driverRace->getPool() instanceof Pool && $driverRace->getPool()->getId() === $this->pool->getId()){
+                $startPosition++;
+            }
+        }
+        $this->startPosition = $startPosition;
     }
 }

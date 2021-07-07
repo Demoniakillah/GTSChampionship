@@ -1,5 +1,6 @@
 <h1>Race Parameters</h1>
 
+<a href="{{ path('race_parameter_new') }}">Create new</a>
 <table class="table table-striped">
     <thead>
     <tr>
@@ -16,7 +17,7 @@
             <td>{{ race_parameter.id }}</td>
             <td>{{ race_parameter.name }}</td>
             <td>{{ race_parameter.type }}</td>
-            <td>{{ race_parameter.availableValues }}</td>
+            <td style="word-break: break-all">{{ race_parameter.availableValues }}</td>
             <td>
                 <a href="{{ path('race_parameter_show', {'id': race_parameter.id}) }}">show</a>
                 <a href="{{ path('race_parameter_edit', {'id': race_parameter.id}) }}">edit</a>
@@ -30,4 +31,3 @@
     </tbody>
 </table>
 
-<a href="{{ path('race_parameter_new') }}">Create new</a>

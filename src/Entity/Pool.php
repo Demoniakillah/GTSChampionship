@@ -5,10 +5,17 @@ namespace App\Entity;
 use App\Repository\PoolRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\PersistentCollection;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 
 /**
  * @ORM\Entity(repositoryClass=PoolRepository::class)
+ * @ORM\Table(uniqueConstraints={
+ *     @UniqueConstraint(
+ *              name="unique_race_name_by_account",
+ *              columns={"user_group","name"}
+ *          )
+ *     })
+ *
  */
 class Pool
 {
@@ -31,10 +38,17 @@ class Pool
     private $points;
 
     /**
-     * @var int
+     * @var int|null
      * @ORM\Column(name="priority", type="integer", nullable=true)
      */
-    private $priority;
+    private $priority = 0;
+
+    /**
+     * @var UserGroup
+     * @ORM\ManyToOne(targetEntity="App\Entity\UserGroup", inversedBy="races")
+     * @ORM\JoinColumn(name="user_group", referencedColumnName="id")
+     */
+    private UserGroup $userGroup;
 
     /**
      * @return int
@@ -61,11 +75,17 @@ class Pool
      */
     private $drivers;
 
+    /**
+     * @return string
+     */
     public function __toString():string
     {
         return $this->name;
     }
 
+    /**
+     * Pool constructor.
+     */
     public function __construct()
     {
         $this->drivers = new ArrayCollection();
@@ -74,9 +94,27 @@ class Pool
     /**
      * @return Driver[]
      */
-    public function getDrivers(): PersistentCollection
+    public function getDrivers()
     {
         return $this->drivers;
+    }
+
+    /**
+     * @return UserGroup
+     */
+    public function getUserGroup(): UserGroup
+    {
+        return $this->userGroup;
+    }
+
+    /**
+     * @param UserGroup $userGroup
+     * @return Pool
+     */
+    public function setUserGroup(UserGroup $userGroup): Pool
+    {
+        $this->userGroup = $userGroup;
+        return $this;
     }
 
     /**
@@ -98,16 +136,26 @@ class Pool
     }
 
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
+    /**
+     * @param string $name
+     * @return $this
+     */
     public function setName(string $name): self
     {
         $this->name = $name;

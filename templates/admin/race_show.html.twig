@@ -6,18 +6,9 @@
     data-hour="{{ race.date ? race.date|date('H') : '' }}"
     data-minute="{{ race.date ? race.date|date('i') : '' }}"></h2>
 <table class="table table-striped">
-    <tbody>
     <tr>
         <th>Date</th>
         <td>{{ race.date ? race.date|date('Y-m-d H:i:s') : '' }}</td>
-    </tr>
-    <tr>
-        <th>Casting</th>
-        <td>{{ race.casting }}</td>
-    </tr>
-    <tr>
-        <th>Host</th>
-        <td>{{ race.host }}</td>
     </tr>
     <tr>
         <th>Livery</th>
@@ -28,8 +19,45 @@
         <td>{{ race.track.country.name ?? '' }} {{ race.track.name ?? '' }}</td>
     </tr>
     <tr>
+        <th>Image Url</th>
+        <td>{{ race.imageUrl }}<br><img src="{{ race.imageUrl }}" style="width: 150px" alt=""></td>
+    </tr>
+    <tr>
+        <th>Hosts</th>
+        <td>
+            <ul>
+                {% for poolHost in race.poolHosts %}
+                    <li>Pool {{ poolHost.pool }}: {{ poolHost.value }}</li>
+                {% endfor %}
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <th>Saloons</th>
+        <td>
+            <ul>
+                {% for poolSaloonLabel in race.poolSaloonLabels %}
+                    <li>Pool {{ poolSaloonLabel.pool }}: {{ poolSaloonLabel.value }}</li>
+                {% endfor %}
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <th>Casting</th>
+        <td>
+            <ul>
+                {% for poolCasting in race.poolCastings %}
+                    <li>Pool {{ poolCasting.pool }}: <a href="{{ poolCasting.value }}">{{ poolCasting.value }}</a></li>
+                {% endfor %}
+            </ul>
+        </td>
+    </tr>
+    <tr>
         <th>More details</th>
-        <td>{{ race.moreDetails }}</td>
+        <td class="more_details_cell">
+            <div class='truncated_details'>{{ race.moreDetails | nl2br | truncate(100, true) | raw }}</div>
+            <div class='details_full_text' style="display:none">{{ race.moreDetails | nl2br }}</div>
+        </td>
     </tr>
     <tr>
         <th>Cars</th>
@@ -41,7 +69,9 @@
                         <ul>
                             {% for carConfiguration in race.carConfigurations %}
                                 {% if carConfiguration.car.id == car.id %}
-                                    <li><i>{{ carConfiguration.parameter }} : {{ carConfiguration.value }}{{ carConfiguration.parameter.unity }}</i></li>
+                                    <li><i>{{ carConfiguration.parameter }}
+                                            : {{ carConfiguration.value }}{{ carConfiguration.parameter.unity }}</i>
+                                    </li>
                                 {% endif %}
                             {% endfor %}
                         </ul>
@@ -56,22 +86,26 @@
         <th>Registered drivers</th>
         <td class="row">
             {% for poolData in inscriptions %}
-            <div class="col">
-                <table class="table table-striped">
-                    <thead>
-                    <tr><th>pool: {{ poolData.pool ?? 'no pool' }}</th></tr>
-                    </thead>
-                    <tbody>
-                    {% for driver in poolData.drivers %}
+                <div class="col">
+                    <table class="table table-striped">
+                        <thead>
                         <tr>
-                            <td>{{ driver }}</td>
+                            <th>pool: {{ poolData.pool ?? 'no pool' }}</th>
                         </tr>
-                    {% else %}
-                        <tr><td>empty</td></tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                        {% for driver in poolData.drivers %}
+                            <tr>
+                                <td>{{ driver }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td>empty</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             {% endfor %}
         </td>
     </tr>
@@ -80,7 +114,11 @@
         <td>
             <ul>
                 {% for configuration in race.configurations %}
-                    <li>{{ configuration.parameter }} : {{ configuration | configurationValue }}</li>
+                    {% if configuration.parameter == "Time" and race.isEndurance == false %}
+                    {% elseif configuration.parameter == "Laps" and race.isEndurance == true %}
+                    {% else %}
+                        <li>{{ configuration.parameter }} : {{ configuration | configurationValue }}</li>
+                    {% endif %}
                 {% endfor %}
             </ul>
         </td>
@@ -91,5 +129,9 @@
 <script>
     $(document).ready(function () {
         countdown()
+        $('.see_more').on('click', function () {
+            $('.truncated_details').hide()
+            $('.details_full_text').show()
+        })
     })
 </script>

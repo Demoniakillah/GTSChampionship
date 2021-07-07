@@ -1,14 +1,19 @@
 <tr>
-    <td><span class="view btn btn-link"
-              data-url="{{ path('admin_race_show', {'id':race.id}) }}"><strong>{{ race.name }}</strong></span></td>
+    <td>
+        <span class="view btn btn-link"
+              data-url="{{ path('admin_race_show', {'id':race.id}) }}"><strong>{{ race.name }}</strong></span>
+    </td>
     <td>{{ race.date ? race.date|date('Y-m-d H:i:s') : '' }}</td>
-    <td
-            class="countdown"
-            data-year="{{ race.date ? race.date|date('Y') : '' }}"
-            data-month="{{ race.date ? race.date|date('m') : '' }}"
-            data-day="{{ race.date ? race.date|date('d') : '' }}"
-            data-hour="{{ race.date ? race.date|date('H') : '' }}"
-            data-minute="{{ race.date ? race.date|date('i') : '' }}"></td>
+    {% if passed == false %}
+        <td
+                class="countdown"
+                data-year="{{ race.date ? race.date|date('Y') : '' }}"
+                data-month="{{ race.date ? race.date|date('m') : '' }}"
+                data-day="{{ race.date ? race.date|date('d') : '' }}"
+                data-hour="{{ race.date ? race.date|date('H') : '' }}"
+                data-minute="{{ race.date ? race.date|date('i') : '' }}">
+        </td>
+    {% endif %}
     <td>{{ race.track }}</td>
     <td>
         <ul>
@@ -33,13 +38,27 @@
         </ul>
     </td>
     <td>
+        <a href="{{ path('event_view',{ 'id':race.id }) }}" target="_blank" class="btn btn-link">{{ path('event_view',{'id': race.id}) }}</a>
+    </td>
+    {% if passed == false %}
+        <td>
+            <a href="{{ path('public_race_inscription',{ 'id':race.id }) }}" target="_blank" class="btn btn-link">{{ path('public_race_inscription',{'id': race.id}) }}</a>
+        </td>
+    {% endif %}
+    <td>
         <a class="get_form_button bi bi-pencil-square text-success"
            data-token="{{ csrf_token('edit'~race.id) }}"
            data-form_url="{{ path('admin_race_edit',{'id':race.id}) }}"
            title="edit event"></a>
+        {% if race.isPassed == true %}
         <a class="race_results bi bi-clipboard-check text-primary"
-           data-result_table_url="{{ path('admin_race_results',{'id':race.id}) }}"
+           data-result_table_url="{{ path('admin_race_results',{'race':race.id}) }}"
            title="event results"></a>
+        {% endif %}
+        <a class="get_form_button bi bi-bag-plus text-warning"
+           data-token="{{ csrf_token('edit'~race.id) }}"
+           data-form_url="{{ path('admin_race_duplicate',{'id':race.id}) }}"
+           title="duplicate"></a>
         <a class="remove_element bi bi-trash text-danger"
            data-token="{{ csrf_token('delete'~race.id) }}"
            data-remove_url="{{ path('race_delete',{'id':race.id}) }}"

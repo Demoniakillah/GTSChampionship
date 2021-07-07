@@ -10,12 +10,10 @@
 <script>
     $(document).ready(() => {
         $('#driver_race_race').on('change', function () {
-            updateRaceCarList($('#driver_race_race'),$('#driver_race_car'),{inscription: "{{ driver_race.id }}", race: $('#driver_race_race').val()})
-        })
-        $('#driver_race_driver').on('change', function () {
+            updateRaceCarList($('#driver_race_race'),$('#driver_race_car'),{inscription: "{{ driver_race is defined ? driver_race.id }}", race: $('#driver_race_race').val()})
             updateRaceDriverList()
         })
-
+        updateRaceDriverList()
         function updateRaceDriverList(onLoad) {
             if(!onLoad) {
                 $('#driver_race_driver').empty()
@@ -23,25 +21,32 @@
                     $.post({
                         url: "{{ path('api_get_race_drivers') }}",
                         dataType: 'json',
-                        data: {inscription: "{{ driver_race.id }}", race: $('#driver_race_race').val()},
+                        data: {inscription: $('#driver_race_id').val(), race: $('#driver_race_race').val()},
                         success: function (drivers) {
                             let selected = drivers.selected ?? false
-                            $.each(drivers, function (driverId, psn) {
+                            if(selected !== false){
+                                $('#driver_race_race').attr('disabled','disabled')
                                 let option = document.createElement('option')
-                                option.value = driverId
-                                option.append(psn)
-                                if (selected === driverId) {
-                                    option.selected = true
-                                }
-                                $('#driver_race_driver').append(option)
-                            })
+                                option.value = selected.id
+                                option.append(selected.psn)
+                                $('#driver_race_driver').append(option).val(selected.id)
+                                $('#driver_race_driver').attr('disabled','disabled')
+                            } else {
+                                $.each(drivers.list, function (psn, driverId) {
+                                    driverId = parseInt(driverId)
+                                    let option = document.createElement('option')
+                                    option.value = driverId
+                                    option.append(psn)
+                                    $('#driver_race_driver').append(option)
+                                })
+                            }
                         }
                     })
                 }
             }
         }
 
-        updateRaceCarList($('#driver_race_race'),$('#driver_race_car'),{inscription: "{{ driver_race.id }}", race: $('#driver_race_race').val()})
+        updateRaceCarList($('#driver_race_race'),$('#driver_race_car'),{inscription: "{{ driver_race is defined ? driver_race.id }}", race: $('#driver_race_race').val()})
         updateRaceDriverList(true)
     })
 </script>

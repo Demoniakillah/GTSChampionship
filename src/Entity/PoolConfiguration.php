@@ -25,12 +25,12 @@ class PoolConfiguration
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $type;
+    private ?string $type;
 
     /**
      * @ORM\Column(type="text")
      */
-    private $value;
+    private ?string $value;
 
     public function getId(): ?int
     {

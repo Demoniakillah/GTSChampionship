@@ -3,10 +3,10 @@
 namespace App\Form;
 
 use App\Entity\DriverRace;
-use App\Entity\Maker;
-use App\Entity\Race;
+use App\Repository\PoolRepository;
+use App\Repository\RaceRepository;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -14,10 +14,27 @@ class DriverRaceType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        $userGroup = $options['user_group'];
         $builder
-            ->add('race')
-            ->add('driver')
-            ->add('car')
+            ->add('race',null,[
+                'query_builder' => static function(RaceRepository $raceRepository) use ($userGroup){
+                    return $raceRepository->createQueryBuilder('race')
+                        ->where('race.date > :now')
+                        ->andWhere('race.userGroup = :userGroup')
+                        ->setParameter('userGroup',$userGroup)
+                        ->setParameter('now',new \DateTime())
+                        ->orderBy('race.date','asc');
+                }
+            ])
+            ->add('driver',null,['data'=>null])
+            ->add('pool',null,[
+                'query_builder' => static function(PoolRepository $poolRepository){
+                    return $poolRepository->createQueryBuilder('pool')
+                        ->orderBy('pool.priority','asc');
+                }
+            ])
+            ->add('car',null,['data'=>null])
+            ->add('id',HiddenType::class,['mapped'=>false,'data'=>$options['data']->getId()])
         ;
 
     }
@@ -27,7 +44,8 @@ class DriverRaceType extends AbstractType
         $resolver->setDefaults(
             [
                 'data_class' => DriverRace::class,
+
             ]
-        ) ;
+        )->setRequired('user_group') ;
     }
 }

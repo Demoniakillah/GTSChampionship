@@ -12,40 +12,74 @@ function updateTableWithEmptyRow(tbody) {
 
 $(document).ready(() => {
     $('.remove_element').on('click', function () {
-        let url = $(this).data('remove_url')
-        let token = $(this).data('token')
-        $.confirm({
-            title: '',
-            content: 'Are you sure ?',
-            useBoostrap: false,
-            width: '100%',
-            boxWidth: '100%',
-            buttons: {
-                yes: {
-                    btnClass: 'btn-red',
-                    action: function () {
-                        $.post({
-                            url: url,
-                            data: {_token: token},
-                            redirect: true,
-                            success: function () {
-                                window.location.reload()
-                            },
-                            error: function (errorMsg) {
-                                $.alert({
-                                    title: 'Error!',
-                                    content: errorMsg.responseText
-                                })
-                            }
-                        })
-
+        if($('.multi_action:checked').length > 0){
+            let url = $(this).data('remove_multi_url')
+            let list = []
+            $.each($('.multi_action:checked'), function(i,inscription){
+                list.push({id: $(inscription).data('item_id'), token: $(inscription).data('token')})
+            })
+            $.confirm({
+                title: '',
+                content: 'Are you sure ?',
+                buttons: {
+                    yes: {
+                        btnClass: 'btn-red',
+                        action: function () {
+                            console.log(list)
+                            $.post({
+                                url: url,
+                                data: {remove_list: list},
+                                dataType: 'json',
+                                success: function () {
+                                    window.location.reload()
+                                },
+                                error: function (errorMsg) {
+                                    $.alert({
+                                        title: 'Error!',
+                                        content: errorMsg.responseText
+                                    })
+                                }
+                            })
+                        }
+                    },
+                    cancel: {
+                        btnClass: 'btn-grey'
                     }
-                },
-                cancel: {
-                    btnClass: 'btn-grey'
                 }
-            }
-        })
+            })
+        }else{
+            let url = $(this).data('remove_url')
+            let token = $(this).data('token')
+            $.confirm({
+                title: '',
+                content: 'Are you sure ?',
+                buttons: {
+                    yes: {
+                        btnClass: 'btn-red',
+                        action: function () {
+                            $.post({
+                                url: url,
+                                data: {_token: token},
+                                redirect: true,
+                                success: function () {
+                                    window.location.reload()
+                                },
+                                error: function (errorMsg) {
+                                    $.alert({
+                                        title: 'Error!',
+                                        content: errorMsg.responseText
+                                    })
+                                }
+                            })
+
+                        }
+                    },
+                    cancel: {
+                        btnClass: 'btn-grey'
+                    }
+                }
+            })
+        }
     })
     $('.get_form_button').on('click', function () {
         let formUrl = $(this).data('form_url')
@@ -70,27 +104,46 @@ $(document).ready(() => {
                             btnClass: 'btn-blue',
                             action: function () {
                                 let error = false
-                                let data = {}
-                                $.each($('input,select,textarea'), function (i, input) {
-                                    data[$(input).attr('name')] = $(input).val()
-                                })
-                                $.post({
-                                    url: $('#form_action_url').val(),
-                                    data: data,
-                                    success: function () {
-                                       if(reload){
-                                           window.location.reload()
-                                       }
-                                        confirm.close()
-                                    },
-                                    error: function (errorMsg) {
-                                        $.alert({
-                                            title: 'Error!',
-                                            content: errorMsg.responseText
-                                        })
-                                        error = true
-                                    }
-                                })
+                                let validateForm = true
+                                if($('[required="required"]').length > 0){
+                                    error = false
+                                    $.each($('[required="required"]'), function (i, required){
+                                        console.log(required.value)
+                                        if(required.value === ''){
+                                            $(required).css('border-color','red')
+                                            validateForm = false
+                                        }
+                                    })
+                                }
+                                if(validateForm === true) {
+                                    let data = {}
+                                    $.each($('input,select,textarea'), function (i, input) {
+                                        if($(input).attr('type') === 'checkbox' || $(input).attr('type') === 'radio'){
+                                            if($(input).is(':checked')){
+                                                data[$(input).attr('name')] = 1
+                                            }
+                                        } else {
+                                            data[$(input).attr('name')] = $(input).val()
+                                        }
+                                    })
+                                    $.post({
+                                        url: $('#form_action_url').val(),
+                                        data: data,
+                                        success: function () {
+                                            if (reload) {
+                                                window.location.reload()
+                                            }
+                                            confirm.close()
+                                        },
+                                        error: function (errorMsg) {
+                                            $.alert({
+                                                title: 'Error!',
+                                                content: errorMsg.responseText
+                                            })
+                                            error = true
+                                        }
+                                    })
+                                }
                                 return error
                             }
                         }

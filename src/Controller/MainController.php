@@ -4,6 +4,7 @@
 namespace App\Controller;
 
 use App\Entity\Menu;
+use App\Entity\User;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,16 +22,27 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 abstract class MainController extends AbstractController
 {
     /**
+     * @return User
+     */
+    protected function getUser():User
+    {
+        return parent::getUser();
+    }
+
+    /**
      * @param Request $request
      * @param $entity
+     * @param bool $csrfToken
      * @return Response
      */
-    protected function deleteAction(Request $request, $entity): Response
+    protected function deleteAction(Request $request, $entity, $csrfToken = null): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$entity->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$entity->getId(), $csrfToken ?? $request->request->get('_token'))) {
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->remove($entity);
             $entityManager->flush();
+        } else {
+            $this->get('logger')->error("csrf token ".$csrfToken ?? $request->request->get('_token')." is not valid for ". 'delete'.$entity->getId());
         }
 
         return $this->redirectToIndex();
@@ -41,11 +53,13 @@ abstract class MainController extends AbstractController
      * @param $entity
      * @param Request $request
      * @param bool $new
+     * @param bool $formOnly
      * @return Response
      */
     protected function updateAction($entity, Request $request, bool $new = true, bool $formOnly = false): Response
     {
         $form = $this->createForm($this->getFormTypeClass(), $entity, $this->getFormOptions());
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

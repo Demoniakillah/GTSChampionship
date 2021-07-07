@@ -19,7 +19,15 @@
                    data-token="{{ csrf_token('edit'~inscription.id) }}"
                    data-form_url="{{ path('admin_driver_race_edit',{'id':inscription.id}) }}"></a>
                 <a class="remove_element bi bi-trash text-danger" data-token="{{ csrf_token('delete'~inscription.id) }}"
-                   data-remove_url="{{ path('driver_race_delete',{'id':inscription.id}) }}"></a>
+                   data-remove_url="{{ path('driver_race_delete',{'id':inscription.id}) }}"
+                   data-remove_multi_url="{{ path('driver_race_delete_multi') }}"
+                ></a>
+                <label>
+                    <input type="checkbox" class="multi_action"
+                           data-item_id="{{ inscription.id }}"
+                           data-token="{{ csrf_token('delete'~inscription.id) }}"
+                    >
+                </label>
             </td>
         </tr>
     {% endfor %}

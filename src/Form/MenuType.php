@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Menu;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -13,7 +14,13 @@ class MenuType extends AbstractType
     {
         $builder
             ->add('label')
-            ->add('url')
+            ->add('route')
+            ->add('role',ChoiceType::class, [
+                'choices' => [
+                    'ROLE_ADMIN' => 'ROLE_ADMIN',
+                    'ROLE_SUPER_ADMIN' => 'ROLE_SUPER_ADMIN'
+                ]
+            ])
         ;
     }
 

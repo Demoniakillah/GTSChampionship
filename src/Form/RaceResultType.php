@@ -23,12 +23,15 @@ class RaceResultType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('id',null,['attr'=>['class'=>'hide driver_race_id']])
-            ->add('finishPosition',TextType::class,['attr'=>['class'=>'hide_with_span position']])
+            ->add('id', null, ['attr' => ['class' => 'hide driver_race_id']])
+            ->add('finishPosition', TextType::class, ['attr' => ['class' => 'hide_with_span position']])
             ->add('driver', TextType::class, [
-                'attr'=>['class'=>'hide_with_span']
+                'attr' => ['class' => 'hide_with_span']
             ])
-            ->add('pool')
+            ->add('pool', TextType::class, [
+                'attr' => ['class' => 'hide'],
+                'data' => $options['pool_id']
+            ])
             ->add('totalTime')
             ->add('bestLap')
             ->add(
@@ -37,17 +40,16 @@ class RaceResultType extends AbstractType
                 [
                     'choices' => [
                         "FINISHED" => DriverRace::FINISHED,
-                        "DISCONECTED" => DriverRace::DISCONNECTED,
+                        "DISCONNECTED" => DriverRace::DISCONNECTED,
                         "MISSING" => DriverRace::MISSING,
                     ],
                 ]
             )
-            ->add('car',null,[
-                'attr'=>['class'=>'car_select']
+            ->add('car', null, [
+                'attr' => ['class' => 'car_select']
             ])
-            ->add('bonus',null,['attr'=>['class'=>'points']])
-            ->add('penalty',null,['attr'=>['class'=>'points']])
-        ;
+            ->add('bonus', null, ['empty_data' => 0, 'attr' => ['min' => 0]])
+            ->add('penalty', null, ['empty_data' => 0, 'attr' => ['min' => 0]]);
     }
 
     public function configureOptions(OptionsResolver $resolver)
@@ -56,6 +58,6 @@ class RaceResultType extends AbstractType
             [
                 'data_class' => DriverRace::class,
             ]
-        )->setRequired('driver_race_repository');
+        )->setRequired('pool_id');
     }
 }

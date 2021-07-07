@@ -1,4 +1,7 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
+{% if removeButton is defined and removeButton == true %}
+    <input type="hidden" value="{{ form_action_url }}" id="form_action_url">
+{% else %}
     <button class="btn">{{ button_label|default('Save') }}</button>
+{% endif %}
 {{ form_end(form) }}

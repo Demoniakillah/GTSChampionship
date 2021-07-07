@@ -23,6 +23,13 @@ use App\Controller\Advanced\TeamController as BaseController;
  */
 class TeamController extends BaseController
 {
+    /**
+     * @return string
+     */
+    protected function getName(): string
+    {
+        return 'admin_team';
+    }
 
     /**
      * @param Request $request
@@ -31,7 +38,9 @@ class TeamController extends BaseController
      */
     public function new(Request $request): Response
     {
-        return $this->updateAction(new Team(), $request, true, true);
+        $team = new Team();
+        $team->setUserGroup($this->getUser()->getUserGroup());
+        return $this->updateAction($team, $request, true, true);
     }
 
     /**
@@ -71,9 +80,9 @@ class TeamController extends BaseController
      */
     public function index(TeamRepository $teamRepository): Response
     {
-        $drivers = $this->getDoctrine()->getRepository(Driver::class)->findBy([], ['psn' => 'asc']);
+        $drivers = $this->getDoctrine()->getRepository(Driver::class)->findBy(['userGroup' => $this->getUser()->getUserGroup()], ['psn' => 'asc']);
         $out = [0 => ['drivers' => []]];
-        foreach ($teamRepository->findBy([], ['name' => 'asc']) as $team) {
+        foreach ($teamRepository->findBy(['userGroup' => $this->getUser()->getUserGroup()], ['name' => 'asc']) as $team) {
             $out[$team->getId()] = ['name' => (string)$team, 'drivers' => []];
         }
         foreach ($drivers as $driver) {
@@ -91,4 +100,5 @@ class TeamController extends BaseController
             ]
         );
     }
+
 }

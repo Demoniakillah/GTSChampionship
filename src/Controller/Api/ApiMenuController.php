@@ -3,6 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Repository\MenuRepository;
+use JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -15,6 +16,10 @@ class ApiMenuController extends AbstractController
 {
     /**
      * @Route("/", name="api_get_menu", methods={"GET"})
+     * @param MenuRepository $menuRepository
+     * @param SerializerInterface $serializer
+     * @return JsonResponse
+     * @throws JsonException
      */
     public function getMenu(MenuRepository $menuRepository, SerializerInterface $serializer): JsonResponse
     {
@@ -23,15 +28,22 @@ class ApiMenuController extends AbstractController
             $add = false;
             if ($item->getRole() === 'ROLE_ADMIN' && in_array('ROLE_ADMIN', $this->getUser()->getRoles())) {
                 $add = true;
+                $classDependencies = explode(',', $item->getClassDependencies());
+                foreach ($classDependencies as $classDependency) {
+                    if (class_exists($classDependency) && count($this->getDoctrine()->getRepository($classDependency)->findBy(['userGroup' => $this->getUser()->getUserGroup()])) === 0) {
+                        $add &= false;
+                    }
+                }
             }
 
             if ($item->getRole() === 'ROLE_SUPER_ADMIN' && in_array('ROLE_SUPER_ADMIN', $this->getUser()->getRoles())) {
                 $add = true;
             }
             if ($add) {
-                $item->setUrl($this->generateUrl($item->getRoute()));
-                $item = json_decode($serializer->serialize($item, 'json'), true);
-                $output[] = $item;
+                $route = $item->getRoute();
+                $item->setUrl($this->generateUrl($route));
+                $item = json_decode($serializer->serialize($item, 'json'), true, 512, JSON_THROW_ON_ERROR);
+                $output[$route] = $item;
             }
         }
 

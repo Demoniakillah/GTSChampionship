@@ -24,6 +24,13 @@ use App\Controller\Advanced\PoolController as BaseController;
  */
 class PoolController extends BaseController
 {
+    /**
+     * @return string
+     */
+    protected function getName(): string
+    {
+        return 'admin_pool';
+    }
 
     /**
      * @param Request $request
@@ -32,7 +39,9 @@ class PoolController extends BaseController
      */
     public function new(Request $request): Response
     {
-        return $this->updateAction(new Pool(), $request, true, true);
+        $pool = new Pool();
+        $pool->setUserGroup($this->getUser()->getUserGroup());
+        return $this->updateAction($pool, $request, true, true);
     }
 
     /**
@@ -55,7 +64,7 @@ class PoolController extends BaseController
             'admin/pool_index.html.twig',
             [
                 'drivers_by_pool' => $this->getDriversByPool(),
-                'pools' => $poolRepository->findBy([], ['priority' => 'asc']),
+                'pools' => $poolRepository->findBy(['userGroup' => $this->getUser()->getUserGroup()], ['priority' => 'asc']),
                 'max_drivers' => (int)$this->getDoctrine()->getRepository(PoolConfiguration::class)->findOneByName('max_drivers')->getValue()
             ]
         );
@@ -64,30 +73,30 @@ class PoolController extends BaseController
     /**
      * @return array
      */
-    protected function getDriversByPool():array
+    protected function getDriversByPool(): array
     {
         $output = [];
-        foreach ($this->getDoctrine()->getRepository(Driver::class)->findAll() as $driver){
-            if($driver->getPool() instanceof Pool){
+        foreach ($this->getDoctrine()->getRepository(Driver::class)->findBy(['userGroup' => $this->getUser()->getUserGroup()]) as $driver) {
+            if ($driver->getPool() instanceof Pool) {
                 $output[$driver->getPool()->getId()]['pool'] = $driver->getPool();
                 $output[$driver->getPool()->getId()]['drivers'][] = $driver;
             } else {
                 $output[0]['drivers'][] = $driver;
             }
         }
-        foreach ($this->getDoctrine()->getRepository(Pool::class)->findAll() as $pool){
-            if(!isset($output[$pool->getId()])){
-                $output[$pool->getId()] = ['pool'=>$pool,'drivers'=>[]];
+        foreach ($this->getDoctrine()->getRepository(Pool::class)->findBy(['userGroup' => $this->getUser()->getUserGroup()]) as $pool) {
+            if (!isset($output[$pool->getId()])) {
+                $output[$pool->getId()] = ['pool' => $pool, 'drivers' => []];
             }
         }
-        if(!isset($output[0])){
+        if (!isset($output[0])) {
             $output[0]['drivers'] = [];
         }
-        uasort($output, static function ($a,$b){
-            if(!isset($a['pool'])){
+        uasort($output, static function ($a, $b) {
+            if (!isset($a['pool'])) {
                 return true;
             }
-            if(!isset($b['pool'])){
+            if (!isset($b['pool'])) {
                 return false;
             }
             return $a['pool']->getPriority() > $b['pool']->getPriority();

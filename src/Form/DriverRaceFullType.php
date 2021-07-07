@@ -27,13 +27,13 @@ class DriverRaceFullType extends DriverRaceType
                 [
                     'choices' => [
                         "FINISHED" => DriverRace::FINISHED,
-                        "DISCONECTED" => DriverRace::DISCONNECTED,
+                        "DISCONNECTED" => DriverRace::DISCONNECTED,
                         "MISSING" => DriverRace::MISSING,
                     ],
                 ]
             )
-            ->add('bonus', null, ['empty_data' => 0])
-            ->add('penalty', null, ['empty_data' => 0])
+            ->add('bonus', null, ['empty_data' => 0,'attr'=>['min'=>0]])
+            ->add('penalty', null, ['empty_data' => 0,'attr'=>['min'=>0]])
         ;
 
     }

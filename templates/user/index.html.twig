@@ -5,6 +5,7 @@
     <tr>
         <th>Id</th>
         <th>Username</th>
+        <th>Group</th>
         <th>Roles</th>
         <th>Password</th>
         <th>actions</th>
@@ -15,6 +16,7 @@
         <tr>
             <td>{{ user.id }}</td>
             <td>{{ user.username }}</td>
+            <td>{{ user.userGroup }}</td>
             <td>{{ user.roles ? user.roles|json_encode : '' }}</td>
             <td>{{ user.password }}</td>
             <td>

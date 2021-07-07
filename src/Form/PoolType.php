@@ -11,29 +11,37 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PoolType extends AbstractType
 {
+    /**
+     * @param FormBuilderInterface $builder
+     * @param array $options
+     * @throws \JsonException
+     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('name');
+            ->add('name')
+        ;
 
         $maxPool = (int)$options['pool_configuration_repository']->findOneByName('max_pool')->getValue();
-        $availablePriority = [null => null];
+        $availablePriority = [];
         for ($i = 0; $i < $maxPool; $i++) {
             $availablePriority[$i] = $i;
         }
-        foreach ($options['pool_repository']->findAll() as $pool) {
+        foreach ($options['pool_repository']->findBy(['userGroup'=>$options['user_group']]) as $pool) {
             if (isset($availablePriority[(int)$pool->getPriority()])) {
                 unset($availablePriority[(int)$pool->getPriority()]);
             }
         }
         $availablePriority[$options['data']->getPriority()] = $options['data']->getPriority();
         ksort($availablePriority);
+
         $builder->add(
             'priority',
             ChoiceType::class,
             [
                 'choices' => $availablePriority,
-                'data' => $options['data']->getPriority()
+                'data' => $options['data']->getPriority(),
+                'attr' => ['required'=>'required']
             ]
         );
 
@@ -48,7 +56,7 @@ class PoolType extends AbstractType
                     $pointTable[$index] = (int)($point * $factor);
                 }
             } else {
-                $pointTable = json_decode($options['pool_configuration_repository']->findOneByName('base_points')->getValue(), true);
+                $pointTable = json_decode($options['pool_configuration_repository']->findOneByName('base_points')->getValue(), true, 512, JSON_THROW_ON_ERROR);
             }
         }
 
@@ -77,6 +85,7 @@ class PoolType extends AbstractType
                 'data_class' => Pool::class,
             ]
         )
+            ->setRequired('user_group')
             ->setRequired('pool_repository')
             ->setRequired('pool_configuration_repository');
     }
