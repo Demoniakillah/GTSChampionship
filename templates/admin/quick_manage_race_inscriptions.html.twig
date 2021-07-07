@@ -63,7 +63,7 @@
                         {% for driver_inscription in pool.drivers %}
                             <li data-driver="{{ driver_inscription.driver.id }}" data-id="{{ driver_inscription.id }}">
                                 {{ driver_inscription.driver }}
-                                <label>Car:
+                                <label style="display: block">Car:</label>
                                     <select class="update_race_driver_car_on_change">
                                         {% for car in race.cars %}
                                             {% if driver_inscription.car is defined and driver_inscription.car.id == car.id %}
@@ -74,7 +74,6 @@
                                             {% endif %}
                                         {% endfor %}
                                     </select>
-                                </label>
                             </li>
                         {% endfor %}
                     </ul>
@@ -88,8 +87,15 @@
     <script>
         $(document).ready(function () {
             function height(){
+                let max_height = parseInt($("#driver_list").css('height').replace(/px/,''))
                 $.each($('.pool_list'), function (i, ul) {
-                    $(ul).css('height', $("#driver_list").css('height'))
+                    let ul_height = parseInt($(ul).css('height').replace(/px/,''))
+                    if(ul_height > max_height){
+                        max_height = ul_height
+                    }
+                })
+                $.each($('.pool_list'), function (i, ul) {
+                    $(ul).css('height', max_height + 'px')
                 })
             }
             height()
@@ -113,9 +119,11 @@
                     let li = $(ui.item);
                     let ul = li.parent('ul');
                     if (ul.hasClass('pool_list')) {
-                        if (li.children('select').length < 1) {
+                        console.log(li.children('select').length)
+                        if (li.children('select').length === 0) {
                             let label = document.createElement('label')
                             label.append('Car:')
+                            label.style.display = 'block'
                             let select = document.createElement('select');
                             $.each(race_car_list, function (i, element) {
                                 let option = document.createElement('option');

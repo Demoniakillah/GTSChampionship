@@ -16,26 +16,27 @@ class DriverRaceType extends AbstractType
     {
         $userGroup = $options['user_group'];
         $builder
-            ->add('race',null,[
-                'query_builder' => static function(RaceRepository $raceRepository) use ($userGroup){
+            ->add('race', null, [
+                'query_builder' => static function (RaceRepository $raceRepository) use ($userGroup) {
                     return $raceRepository->createQueryBuilder('race')
                         ->where('race.date > :now')
                         ->andWhere('race.userGroup = :userGroup')
-                        ->setParameter('userGroup',$userGroup)
-                        ->setParameter('now',new \DateTime())
-                        ->orderBy('race.date','asc');
+                        ->setParameter('userGroup', $userGroup)
+                        ->setParameter('now', new \DateTime())
+                        ->orderBy('race.date', 'asc');
                 }
             ])
-            ->add('driver',null,['data'=>null])
-            ->add('pool',null,[
-                'query_builder' => static function(PoolRepository $poolRepository){
+            ->add('driver', null, ['data' => null])
+            ->add('pool', null, [
+                'query_builder' => static function (PoolRepository $poolRepository) use ($userGroup) {
                     return $poolRepository->createQueryBuilder('pool')
-                        ->orderBy('pool.priority','asc');
+                        ->where('pool.userGroup = :userGroup')
+                        ->setParameter('userGroup', $userGroup)
+                        ->orderBy('pool.priority', 'asc');
                 }
             ])
-            ->add('car',null,['data'=>null])
-            ->add('id',HiddenType::class,['mapped'=>false,'data'=>$options['data']->getId()])
-        ;
+            ->add('car', null, ['data' => null])
+            ->add('id', HiddenType::class, ['mapped' => false, 'data' => $options['data']->getId()]);
 
     }
 
@@ -46,6 +47,6 @@ class DriverRaceType extends AbstractType
                 'data_class' => DriverRace::class,
 
             ]
-        )->setRequired('user_group') ;
+        )->setRequired('user_group');
     }
 }

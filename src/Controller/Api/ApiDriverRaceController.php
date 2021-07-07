@@ -69,21 +69,27 @@ class ApiDriverRaceController extends AbstractController
         if($request->request->get('id')) {
             $inscription = $driverRaceRepository->find($request->request->get('id'));
         }
+        $race = $raceRepository->find($request->request->get('race'));
+        $driver = $driverRepository->find($request->request->get('driver'));
+        $inscription = $driverRaceRepository->findOneBy([
+            'race' => $race,
+            'driver' => $driver
+        ]);
         if (!$inscription instanceof DriverRace) {
             $inscription = new DriverRace();
-        }
             $inscription
                 ->setCar($carRepository->find($request->request->get('car')))
-                ->setRace($raceRepository->find($request->request->get('race')))
+                ->setRace($race)
                 ->setStartPosition($request->request->get('position'))
                 ->setPool($poolRepository->find($request->request->get('pool')))
-                ->setDriver($driverRepository->find($request->request->get('driver')));
+                ->setDriver($driver);
             $em->persist($inscription);
 
-        foreach ($inscription->getRace()->getDriverRaces() as $driverRace) {
-            $driverRace->setStartPosition(array_search((int)$driverRace->getDriver()->getId(), array_map('intval', $request->request->get('start_positions')), true));
+            foreach ($inscription->getRace()->getDriverRaces() as $driverRace) {
+                $driverRace->setStartPosition(array_search((int)$driverRace->getDriver()->getId(), array_map('intval', $request->request->get('start_positions')), true));
+            }
+            $em->flush();
         }
-        $em->flush();
         return new Response($inscription->getId());
     }
 

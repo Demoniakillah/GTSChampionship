@@ -118,7 +118,7 @@
         {% endif %}
     </div>
 </div>
-{% if race.isPassed == fale %}
+{% if race.isPassed == false %}
     <hr>
     <a class="col-12 btn btn-primary" href="{{ path('public_race_inscription',{'id':race.id}) }}">Subscribe to this race</a>
 {% endif %}
