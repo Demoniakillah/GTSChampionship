@@ -12,13 +12,13 @@
         <h1 id="event_title" style="color: #fefefe; display: none">{{ race }}</h1>
         <h2>Organized by
             <i>{{ race.userGroup }}</i>
+            {% for user in race.userGroup %}
+                <h4>{{ user.name }}</h4>
+            {% endfor %}
             {% if race.userGroup.imageUrl is not empty %}<br><img style="width: 150px"
                                                                   src="{{ race.userGroup.imageUrl }}" alt=""/>
             {% endif %}
         </h2>
-        {% for user in race.userGroup %}
-        <h4>{{ user.name }}</h4>
-        {% endfor %}
         <h2 style="color: #fefefe">{% if race.isPassed == false %}
             <div
                     class="countdown"
