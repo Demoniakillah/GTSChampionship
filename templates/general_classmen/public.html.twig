@@ -2,6 +2,12 @@
 {% set id=userGroup.id %}
 {% block content %}
     <div class="container">
+        <h2>Race results</h2>
+        <p>
+            {% for race in userGroup.races %}
+            <a href="{{ path('event_view',{'id':race.id}) }}">{{ path('event_view',{'id':race.id}) }}</a>
+            {% endfor %}
+        </p>
     {% include 'general_classmen/tables.html.twig' %}
     </div>
 {% endblock %}
