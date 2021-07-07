@@ -12,11 +12,11 @@
         <h1 id="event_title" style="color: #fefefe; display: none">{{ race }}</h1>
         <h2>Organized by
             <i>{{ race.userGroup }}</i>
-            <ul>
+            <p>
                 {% for user in race.userGroup.accounts %}
-                    <li>{{ user.username }}</li>
+                    <span>{{ user.username }}</span><br>
                 {% endfor %}
-            </ul>
+            </p>
             {% if race.userGroup.imageUrl is not empty %}<br><img style="width: 150px"
                                                                   src="{{ race.userGroup.imageUrl }}" alt=""/>
             {% endif %}
