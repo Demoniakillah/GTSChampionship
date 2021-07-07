@@ -5,7 +5,7 @@
         <h2>Race results</h2>
         <p>
             {% for race in userGroup.races %}
-            <a href="{{ path('event_view',{'id':race.id}) }}">{{ race }}</a>
+            <a href="{{ path('event_view',{'id':race.id}) }}">{{ race.date | format('Y-m-d H:i:s') }} - {{ race }}</a>
             {% endfor %}
         </p>
     {% include 'general_classmen/tables.html.twig' %}
