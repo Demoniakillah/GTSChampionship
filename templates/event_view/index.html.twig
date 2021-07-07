@@ -16,6 +16,9 @@
                                                                   src="{{ race.userGroup.imageUrl }}" alt=""/>
             {% endif %}
         </h2>
+        {% for user in race.userGroup %}
+        <h4>{{ user.name }}</h4>
+        {% endfor %}
         <h2 style="color: #fefefe">{% if race.isPassed == false %}
             <div
                     class="countdown"
