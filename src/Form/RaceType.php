@@ -31,6 +31,9 @@ class RaceType extends AbstractType
         return $data;
     }
 
+    /**
+     * @throws \JsonException
+     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -146,7 +149,8 @@ class RaceType extends AbstractType
                             'mapped' => false,
                             'label' => $raceParameter->getName(),
                             'data' => $configurations[$raceParameter->getId()] ?? 0,
-                            'choices' => array_flip(json_decode($raceParameter->getAvailableValues(), true)),
+                            'choices' => array_flip(json_decode($raceParameter->getAvailableValues(), true, 512, JSON_THROW_ON_ERROR)),
+                            'attr' => ['class'=>$raceParameter->getName() === 'Category'?'car_category':''],
                         ]
                     );
                 }

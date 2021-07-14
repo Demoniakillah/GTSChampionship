@@ -25,7 +25,6 @@ $(document).ready(() => {
                     yes: {
                         btnClass: 'btn-red',
                         action: function () {
-                            console.log(list)
                             $.post({
                                 url: url,
                                 data: {remove_list: list},
@@ -108,7 +107,6 @@ $(document).ready(() => {
                                 if($('[required="required"]').length > 0){
                                     error = false
                                     $.each($('[required="required"]'), function (i, required){
-                                        console.log(required.value)
                                         if(required.value === ''){
                                             $(required).css('border-color','red')
                                             validateForm = false

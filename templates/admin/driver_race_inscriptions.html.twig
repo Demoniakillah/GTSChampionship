@@ -12,6 +12,9 @@
         <div class="col">
             {% set inscriptions = pool.inscriptions %}
             <div class="text-success" style="font-size: 1.2rem"><strong>pool: </strong>{{ pool.pool }} (<span class="nb">{{ inscriptions | length }}</span>)</div>
+            {% if inscriptions | length > 2 %}
+            <span class="btn btn-link random_start_grill" data-race="{{ data.race.id }}" data-pool="{{ pool.pool.id }}">Random start grill</span>
+            {% endif %}
             {{ include('admin/driver_race_table.html.twig') }}
         </div>
     {% else %}

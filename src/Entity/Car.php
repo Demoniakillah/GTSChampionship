@@ -21,26 +21,26 @@ class Car
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id;
 
     /**
      * @var Maker
      * @ORM\ManyToOne(targetEntity="App\Entity\Maker", inversedBy="cars")
      * @ORM\JoinColumn(name="maker", referencedColumnName="id")
      */
-    private $maker;
+    private Maker $maker;
 
     /**
-     * @var Maker
-     * @ORM\ManyToOne(targetEntity="App\Entity\Maker", inversedBy="cars")
-     * @ORM\JoinColumn(name="maker", referencedColumnName="id")
+     * @var CarCategory
+     * @ORM\ManyToOne(targetEntity="App\Entity\CarCategory", inversedBy="cars")
+     * @ORM\JoinColumn(name="category", referencedColumnName="id")
      */
-    private $category;
+    private CarCategory $category;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $name;
+    private string $name;
 
     /**
      * @var DriverRace[]
@@ -51,13 +51,19 @@ class Car
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $imageSrc;
+    private ?string $imageSrc;
 
+    /**
+     * @return string
+     */
     public function __toString():string
     {
         return $this->maker->getName() . ' ' . $this->name;
     }
 
+    /**
+     * Car constructor.
+     */
     public function __construct()
     {
         $this->races = new ArrayCollection();
@@ -111,16 +117,26 @@ class Car
         return $this;
     }
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
+    /**
+     * @param string $name
+     * @return $this
+     */
     public function setName(string $name): self
     {
         $this->name = $name;
@@ -128,15 +144,40 @@ class Car
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getImageSrc(): ?string
     {
         return $this->imageSrc;
     }
 
+    /**
+     * @param string|null $imageSrc
+     * @return $this
+     */
     public function setImageSrc(?string $imageSrc): self
     {
         $this->imageSrc = $imageSrc;
 
+        return $this;
+    }
+
+    /**
+     * @return CarCategory
+     */
+    public function getCategory(): CarCategory
+    {
+        return $this->category;
+    }
+
+    /**
+     * @param CarCategory $category
+     * @return Car
+     */
+    public function setCategory(CarCategory $category): Car
+    {
+        $this->category = $category;
         return $this;
     }
 }

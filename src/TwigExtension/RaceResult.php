@@ -90,6 +90,9 @@ class RaceResult extends AbstractExtension
      */
     public function getGeneralRanking(int $userGroupId): array
     {
+        $output = [];
+        $output['ranking'] = [];
+        $output['driver_race_positions'] = [];
         $races = $this->raceRepository->createQueryBuilder('race')
             ->where('race.date < :now')
             ->andWhere('race.userGroup = :userGroupId')
@@ -107,10 +110,8 @@ class RaceResult extends AbstractExtension
             ];
 
         }
-        $output = [];
         foreach ($racesResults as $raceData) {
             foreach ($raceData['results'] as $pool => $driverResults) {
-                $poolBefore = null;
                 foreach ($driverResults as $finishPosition => $driverResult) {
                     if ($driverResult instanceof DriverRace) {
                         $psn = $driverResult->getDriver()->getPsn();
@@ -174,7 +175,9 @@ class RaceResult extends AbstractExtension
             }
         }
 
-        $output['best_driver'] = array_keys($output['ranking'])[0];
+        if(isset($output['ranking']) && array_key_exists(0,$output['ranking'])){
+            $output['best_driver'] = array_keys($output['ranking'])[0];
+        }
         foreach ($output['driver_race_positions'] as $psn => $data) {
             $deltaTotal = 0;
             foreach ($data as $datum) {

@@ -13,6 +13,41 @@
 <script src="{{ asset('admin_form.js') }}"></script>
 <script>
     $(document).ready(function () {
+        $('.random_start_grill').on('click', function () {
+            let pool = $(this).data('pool')
+            let race = $(this).data('race')
+            $.alert({
+                title: '',
+                content: 'This action will modify your start grid<br>Are you sure to continue ?',
+                buttons: {
+                    no: {
+                        btnClass: "btn-orange"
+                    },
+                    yes: {
+                        btnClass: "btn-red",
+                        action: function () {
+                            $.post({
+                                url: "{{ path('api_random_start_grill') }}",
+                                data: {
+                                    pool: pool,
+                                    race: race
+                                },
+                                error: function (errorMsg) {
+                                    console.log(errorMsg)
+                                    $.alert({
+                                        title: '',
+                                        content: errorMsg.responseText
+                                    })
+                                },
+                                success: function () {
+                                    window.location.reload()
+                                }
+                            })
+                        }
+                    }
+                }
+            })
+        })
         $('.quick_manage_race_inscriptions').on('click', function () {
             let url = "{{ path('api_get_driver_race_quick_data',{'id':0}) }}".replace(/0$/,$(this).data('id'))
             $.get({

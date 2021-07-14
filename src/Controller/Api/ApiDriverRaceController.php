@@ -26,6 +26,33 @@ use Symfony\Component\Routing\Annotation\Route;
 class ApiDriverRaceController extends AbstractController
 {
     /**
+     * @Route("/random/start/grill", name="api_random_start_grill")
+     * @param Request $request
+     * @param DriverRaceRepository $driverRaceRepository
+     * @return JsonResponse
+     */
+    public function randomStartGrill(Request  $request, DriverRaceRepository $driverRaceRepository):JsonResponse
+    {
+        $poolId = $request->request->get('pool');
+        $raceId = $request->request->get('race');
+        $inscriptions = $driverRaceRepository->findBy(['race'=>$raceId, 'pool'=>$poolId]);
+        $nb = count($inscriptions);
+        $arrayPositions = [];
+        if($nb>2){
+            for ($position = 0; $position<$nb; $position++){
+                $arrayPositions[] = $position;
+            }
+            foreach ($inscriptions as $inscription){
+                $startPosition = array_rand($arrayPositions);
+                $inscription->setStartPosition($startPosition);
+                unset($arrayPositions[$startPosition]);
+            }
+            $this->getDoctrine()->getManager()->flush();
+        }
+        return $this->json('ok');
+    }
+
+    /**
      * @Route("/quick/manage/data/remove", name="api_delete_driver_race_quick_data", methods={"POST"})
      * @param Request $request
      * @param DriverRaceRepository $driverRaceRepository
