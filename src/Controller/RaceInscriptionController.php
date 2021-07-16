@@ -21,6 +21,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class RaceInscriptionController extends AbstractController
 {
@@ -135,7 +136,7 @@ class RaceInscriptionController extends AbstractController
             'race_inscription/email_confirm.html.twig',
             [
                 'user' => $psn,
-                'link' => $this->generateUrl('new_public_race_inscription_validation', ['token'=>$validationToken]),
+                'link' => $this->generateUrl('new_public_race_inscription_validation', ['token'=>$validationToken], UrlGeneratorInterface::ABSOLUTE_URL),
                 'race' => $race,
             ]
         );
