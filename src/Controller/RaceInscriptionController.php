@@ -52,7 +52,7 @@ class RaceInscriptionController extends AbstractController
     public function confirmEmail(string $token, DriverRaceRepository $driverRaceRepository):Response
     {
         $driverRace = $driverRaceRepository->findOneBy(['validationToken'=>$token]);
-        if(!$driverRace instanceof DriverRace && !$driverRace->getRace()->isPassed()){
+        if($driverRace instanceof DriverRace && !$driverRace->hasBennValidated() && !$driverRace->getRace()->isPassed()){
             $driverRace->validateInscription();
             $this->getDoctrine()->getmanager()->flush();
             return $this->render('race_inscription/confirm_success.html.twig',['race'=>$driverRace->getRace(), 'user'=>$driverRace->getDriver()]);
