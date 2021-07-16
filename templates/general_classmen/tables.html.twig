@@ -5,7 +5,7 @@
     <tr>
         <th>Winner</th>
         <td>{{ generalRanking.best_driver }} <span
-                    class="text-success">({{ generalRanking.driver_progressions[generalRanking.best_driver]*100~'%' }})</span>
+                    class="text-success">{% if generalRanking.best_driver is not empty  %}({{ generalRanking.driver_progressions[generalRanking.best_driver]*100~'%' }}){% endif %}</span>
         </td>
     </tr>
     <tr>
@@ -19,13 +19,13 @@
     <tr>
         <th>Medail of Honor - Driver</th>
         <td>{{ generalRanking.best_driver_progression }} <span
-                    class="text-success">({{ (generalRanking.driver_progressions[generalRanking.best_driver_progression]*100)| round(2,'floor') ~'%' }})</span>
+                    class="text-success">{% if generalRanking.best_driver_progression is not empty  %}({{ (generalRanking.driver_progressions[generalRanking.best_driver_progression]*100)| round(2,'floor') ~'%' }}){% endif %}</span>
         </td>
     </tr>
     <tr>
         <th>Medail of Honor - Team</th>
         <td>{{ generalRanking.best_team_progression }} <span
-                    class="text-success">({{ (generalRanking.team_progressions[generalRanking.best_team_progression]*100)| round(2,'floor') ~'%' }})</span>
+                    class="text-success">{% if generalRanking.best_team_progression is not empty  %}({{ (generalRanking.team_progressions[generalRanking.best_team_progression]*100)| round(2,'floor') ~'%' }}){% endif %}</span>
     </tr>
     </tbody>
 </table>

@@ -186,11 +186,7 @@ class RaceController extends BaseController
         foreach ($race->getDriverRaces() as $inscription) {
             if ($inscription->getPool() instanceof Pool) {
                 $inscriptions[$inscription->getPool()->getId()]['pool'] = $inscription->getPool();
-                if($isInscriptions){
-                    $inscriptions[$inscription->getPool()->getId()]['drivers'][] = $inscription;
-                } else {
-                    $inscriptions[$inscription->getPool()->getId()]['drivers'][] = $inscription;
-                }
+                $inscriptions[$inscription->getPool()->getId()]['drivers'][] = $inscription;
             } else {
                 $inscriptions[0]['drivers'][] = $inscription;
             }
@@ -199,6 +195,12 @@ class RaceController extends BaseController
         uasort(
             $inscriptions,
             static function ($a, $b) {
+                if(!isset($a['pool'])){
+                    return false;
+                }
+                if(!isset($b['pool'])){
+                    return true;
+                }
                 return $a['pool']->getPriority() > $b['pool']->getPriority();
             }
         );

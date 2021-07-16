@@ -1,0 +1,19 @@
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>confirmation</title>
+</head>
+<body>
+<h3>Hi {{ user }},</h3>
+<p>
+    Thanks for your subscribe,<br>
+    Please click on the following link to finish your inscription to the race <strong>{{ race }}</strong> at {{ race.date | date('Y-m-d H:i:s') }}
+</p>
+<p style="text-align: center">
+    <img src="{{ race.imageUrl }}" alt="">
+</p>
+</body>
+</html>

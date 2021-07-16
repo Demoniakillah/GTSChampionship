@@ -31,11 +31,11 @@ class Car
     private Maker $maker;
 
     /**
-     * @var CarCategory
+     * @var CarCategory|null
      * @ORM\ManyToOne(targetEntity="App\Entity\CarCategory", inversedBy="cars")
-     * @ORM\JoinColumn(name="category", referencedColumnName="id")
+     * @ORM\JoinColumn(name="category", referencedColumnName="id", nullable=true)
      */
-    private CarCategory $category;
+    private ?CarCategory $category;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -52,6 +52,26 @@ class Car
      * @ORM\Column(type="text", nullable=true)
      */
     private ?string $imageSrc;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $power;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $torque;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $weight;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $transmission;
 
     /**
      * @return string
@@ -166,7 +186,7 @@ class Car
     /**
      * @return CarCategory
      */
-    public function getCategory(): CarCategory
+    public function getCategory(): ?CarCategory
     {
         return $this->category;
     }
@@ -178,6 +198,54 @@ class Car
     public function setCategory(CarCategory $category): Car
     {
         $this->category = $category;
+        return $this;
+    }
+
+    public function getPower(): ?string
+    {
+        return $this->power;
+    }
+
+    public function setPower(?string $power): self
+    {
+        $this->power = $power;
+
+        return $this;
+    }
+
+    public function getTorque(): ?string
+    {
+        return $this->torque;
+    }
+
+    public function setTorque(?string $torque): self
+    {
+        $this->torque = $torque;
+
+        return $this;
+    }
+
+    public function getWeight(): ?string
+    {
+        return $this->weight;
+    }
+
+    public function setWeight(?string $weight): self
+    {
+        $this->weight = $weight;
+
+        return $this;
+    }
+
+    public function getTransmission(): ?string
+    {
+        return $this->transmission;
+    }
+
+    public function setTransmission(?string $transmission): self
+    {
+        $this->transmission = $transmission;
+
         return $this;
     }
 }

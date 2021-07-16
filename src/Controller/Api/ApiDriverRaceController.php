@@ -59,7 +59,7 @@ class ApiDriverRaceController extends AbstractController
      * @param EntityManagerInterface $em
      * @return Response
      */
-    public function remove(Request $request, DriverRaceRepository $driverRaceRepository, EntityManagerInterface $em)
+    public function remove(Request $request, DriverRaceRepository $driverRaceRepository, EntityManagerInterface $em): Response
     {
         if($request->request->get('id')) {
             $inscription = $driverRaceRepository->find($request->request->get('id'));

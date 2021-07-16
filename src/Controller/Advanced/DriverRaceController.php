@@ -129,7 +129,7 @@ class DriverRaceController extends MainController
         if($entity->getPool() instanceof Pool && $entity->getDriver() instanceof Driver) {
             $entity->getDriver()->setPool($entity->getPool());
         }
-        $entity->setStartPosition(count($entity->getRace()->getDriverRaces())-1);
+        $entity->validateInscription();
         parent::submit($request, $entity, $form);
     }
 

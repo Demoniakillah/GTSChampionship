@@ -3,18 +3,30 @@
 <table class="table table-striped">
     <thead>
     <tr>
+        <th></th>
         <th>Name</th>
+        <th>Power</th>
+        <th>Weight</th>
+        <th>Torque</th>
+        <th>Transmission</th>
+        <th>Category</th>
         <th>actions</th>
     </tr>
     </thead>
     <tbody>
     {% for maker in makers %}
         <tr>
-            <th colspan="2">{{ maker }}</th>
+            <th colspan="8">{{ maker }}</th>
         </tr>
         {% for car in maker.cars %}
             <tr>
+                <td><img src="{{ car.imageSrc }}" alt=""></td>
                 <td>{{ car.name }}</td>
+                <td>{{ car.power }}</td>
+                <td>{{ car.weight }}</td>
+                <td>{{ car.torque }}</td>
+                <td>{{ car.transmission }}</td>
+                <td>{{ car.category }}</td>
                 <td>
                     <a href="{{ path('car_show', {'id': car.id}) }}">show</a>
                     <a href="{{ path('car_edit', {'id': car.id}) }}">edit</a>

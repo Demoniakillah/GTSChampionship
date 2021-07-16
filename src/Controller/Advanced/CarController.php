@@ -5,7 +5,6 @@ namespace App\Controller\Advanced;
 use App\Controller\MainController;
 use App\Entity\Car;
 use App\Form\CarType;
-use App\Repository\CarRepository;
 use App\Repository\MakerRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

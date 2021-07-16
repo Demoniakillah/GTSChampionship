@@ -36,18 +36,16 @@ class Driver
     private ?string $name;
 
     /**
-     * @var Team
      * @ORM\ManyToOne(targetEntity="App\Entity\Team", inversedBy="drivers")
      * @ORM\JoinColumn(name="team", referencedColumnName="id", onDelete="SET NULL")
      */
     private ?Team $team;
 
     /**
-     * @var Pool
      * @ORM\ManyToOne(targetEntity="App\Entity\Pool", inversedBy="drivers")
      * @ORM\JoinColumn(name="pool",referencedColumnName="id", onDelete="SET NULL")
      */
-    private ?Pool $pool;
+    private ?Pool $pool = null;
 
     /**
      * @var DriverRace[]
@@ -135,7 +133,8 @@ class Driver
     }
 
     /**
-     * @param Pool $pool
+     * @param Pool|null $pool
+     * @return Driver
      */
     public function setPool(?Pool $pool): self
     {

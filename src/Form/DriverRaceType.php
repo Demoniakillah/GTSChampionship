@@ -17,6 +17,7 @@ class DriverRaceType extends AbstractType
         $userGroup = $options['user_group'];
         $builder
             ->add('race', null, [
+                'attr' => ['required' => "required"], 'required' => true,
                 'query_builder' => static function (RaceRepository $raceRepository) use ($userGroup) {
                     return $raceRepository->createQueryBuilder('race')
                         ->where('race.date > :now')
@@ -26,7 +27,7 @@ class DriverRaceType extends AbstractType
                         ->orderBy('race.date', 'asc');
                 }
             ])
-            ->add('driver', null, ['data' => null])
+            ->add('driver', null, ['attr' => ['required' => "required"], 'required' => true, 'data' => null])
             ->add('pool', null, [
                 'query_builder' => static function (PoolRepository $poolRepository) use ($userGroup) {
                     return $poolRepository->createQueryBuilder('pool')

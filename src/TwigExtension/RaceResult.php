@@ -93,6 +93,11 @@ class RaceResult extends AbstractExtension
         $output = [];
         $output['ranking'] = [];
         $output['driver_race_positions'] = [];
+        $output['driver_progressions'] = [];
+        $output['teams'] = [];
+        $output['team_progressions'] = [];
+        $output['maker_points'] = [];
+        $output['best_driver'] = null;
         $races = $this->raceRepository->createQueryBuilder('race')
             ->where('race.date < :now')
             ->andWhere('race.userGroup = :userGroupId')
@@ -192,10 +197,10 @@ class RaceResult extends AbstractExtension
                 }
             }
         }
-        $output['best_driver_rate'] = max($output['driver_progressions']);
-        $output['best_team'] = array_keys($output['teams'])[0];
-        $output['best_team_progression'] = array_search(max($output['team_progressions']), $output['team_progressions'], true);
-        $output['best_driver_progression'] = array_search(max($output['driver_progressions']), $output['driver_progressions'], true);
+        $output['best_driver_rate'] = (is_array($output['driver_progressions']) && !empty($output['driver_progressions']))??max($output['driver_progressions']);
+        $output['best_team'] = array_key_exists(0, $output['teams'])?array_keys($output['teams'])[0]:null;
+        $output['best_team_progression'] = (is_array($output['team_progressions']) && !empty($output['team_progressions']))??array_search(max($output['team_progressions']), $output['team_progressions'], true);
+        $output['best_driver_progression'] = (is_array($output['driver_progressions']) && !empty($output['driver_progressions']))??array_search(max($output['driver_progressions']), $output['driver_progressions'], true);
         uasort($output['ranking'], static function ($a, $b) {
             return $a['points'] < $b['points'];
         });
@@ -203,7 +208,7 @@ class RaceResult extends AbstractExtension
             return $a['points'] < $b['points'];
         });
         asort($output['team_progressions'], SORT_DESC);
-        $output['best_maker'] = array_search(max($output['maker_points']), $output['maker_points'], true);
+        $output['best_maker'] = (is_array($output['maker_points']) && !empty($output['maker_points']))??array_search(max($output['maker_points']), $output['maker_points'], true);
         return $output;
     }
 

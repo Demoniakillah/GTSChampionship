@@ -9,28 +9,41 @@
     </thead>
     <tbody class="driver_race_inscriptions driver_race_inscriptions_race_{{ data.race.id }} {% if pool.pool.id is not defined %}empty_pool{% endif %}"
            data-connected="driver_race_inscriptions_race_{{ data.race.id }}" data-pool="{{ pool.pool.id ?? '' }}">
+    {% set i = 1 %}
     {% for inscription in inscriptions %}
-        <tr data-inscription="{{ inscription.id }}">
-            <td>{{ loop.index }}</td>
-            <td>{{ inscription.driver }}</td>
-            <td>{{ inscription.car }}</td>
-            <td>
-                <a class="get_form_button bi bi-pencil-square text-success no_reload"
-                   data-token="{{ csrf_token('edit'~inscription.id) }}"
-                   data-form_url="{{ path('admin_driver_race_edit',{'id':inscription.id}) }}"></a>
-                <a class="remove_element bi bi-trash text-danger" data-token="{{ csrf_token('delete'~inscription.id) }}"
-                   data-remove_url="{{ path('driver_race_delete',{'id':inscription.id}) }}"
-                   data-remove_multi_url="{{ path('driver_race_delete_multi') }}"
-                ></a>
-                <label>
-                    <input type="checkbox" class="multi_action"
-                           data-item_id="{{ inscription.id }}"
-                           data-token="{{ csrf_token('delete'~inscription.id) }}"
-                    >
-                </label>
-            </td>
-        </tr>
+        {% if inscription.hasBennValidated %}
+            <tr data-inscription="{{ inscription.id }}">
+                <td>{{ i }}</td>
+                <td>{{ inscription.driver }}</td>
+                <td>{{ inscription.car }}</td>
+                <td>
+                    <a class="get_form_button bi bi-pencil-square text-success no_reload"
+                       data-token="{{ csrf_token('edit'~inscription.id) }}"
+                       data-form_url="{{ path('admin_driver_race_edit',{'id':inscription.id}) }}"></a>
+                    <a class="remove_element bi bi-trash text-danger"
+                       data-token="{{ csrf_token('delete'~inscription.id) }}"
+                       data-remove_url="{{ path('driver_race_delete',{'id':inscription.id}) }}"
+                       data-remove_multi_url="{{ path('driver_race_delete_multi') }}"
+                    ></a>
+                    <label>
+                        <input type="checkbox" class="multi_action"
+                               data-item_id="{{ inscription.id }}"
+                               data-token="{{ csrf_token('delete'~inscription.id) }}"
+                        >
+                    </label>
+                </td>
+            </tr>
+            {% set i = i+1 %}
+        {% endif %}
     {% endfor %}
     </tbody>
 </table>
+<h5>Pending inscriptions:</h5>
+<ul>
+    {% for inscription in inscriptions %}
+        {% if inscription.hasBennValidated == false %}
+            <li class="text-warning">{{ inscription.driver }} - {{ inscription.driver.team }}</li>
+        {% endif %}
+    {% endfor %}
+</ul>
 

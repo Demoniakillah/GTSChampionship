@@ -3,14 +3,11 @@
 
 namespace App\Controller\Admin;
 
-
-use App\Entity\Car;
 use App\Entity\Driver;
 use App\Entity\DriverRace;
 use App\Entity\Pool;
 use App\Entity\PoolConfiguration;
 use App\Entity\Race;
-use App\Entity\Team;
 use App\Form\DriverRaceType;
 use App\Repository\DriverRaceRepository;
 use Symfony\Component\HttpFoundation\Request;

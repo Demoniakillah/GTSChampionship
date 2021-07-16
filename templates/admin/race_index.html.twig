@@ -19,10 +19,6 @@
     {% set passed=false %}
     {% for race in races.next %}
         {{ include('admin/race_table.html.twig') }}
-    {% else %}
-        <tr>
-            <td colspan="7">no records found</td>
-        </tr>
     {% endfor %}
     </tbody>
 </table>
@@ -43,10 +39,6 @@
     {% set passed=true %}
     {% for race in races.passed %}
         {{ include('admin/race_table.html.twig') }}
-    {% else %}
-        <tr>
-            <td colspan="7">no records found</td>
-        </tr>
     {% endfor %}
     </tbody>
 </table>

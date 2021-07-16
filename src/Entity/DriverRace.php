@@ -30,76 +30,94 @@ class DriverRace
      *
      */
     public const MISSING = 2;
+    /**
+     *
+     */
+    public const PENDING = 0;
+    /**
+     *
+     */
+    public const VALIDATED = 1;
 
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id = null;
 
     /**
      * @ORM\Column(type="string", length=10, nullable=true)
      */
-    private $totalTime;
+    private ?string $totalTime = '00:00:000';
 
     /**
      * @ORM\Column(type="string", length=10, nullable=true)
      */
-    private $bestLap;
+    private ?string $bestLap = '00:00:000';
 
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $startPosition;
+    private ?int $startPosition = 0;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $finishPosition;
+    private ?int $finishPosition = 0;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $finishStatus = self::FINISHED;
+    private ?int $finishStatus = self::FINISHED;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $bonus = 0;
+    private ?int $bonus = 0;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $penalty = 0;
+    private ?int $penalty = 0;
 
     /**
-     * @var Pool
+     * @var Pool|null
      * @ORM\ManyToOne(targetEntity="App\Entity\Pool")
      * @ORM\JoinColumn(name="pool", referencedColumnName="id")
      */
-    private $pool;
+    private ?Pool $pool = null;
 
     /**
-     * @var Driver
+     * @var Driver|null
      * @ORM\ManyToOne(targetEntity="App\Entity\Driver", inversedBy="races")
      * @ORM\JoinColumn(name="driver", referencedColumnName="id")
      */
-    private $driver;
+    private ?Driver $driver = null;
 
     /**
-     * @var Car
+     * @var Car|null
      * @ORM\ManyToOne(targetEntity="App\Entity\Car", inversedBy="races")
      * @ORM\JoinColumn(name="car", referencedColumnName="id")
      */
-    private $car;
+    private ?Car $car = null;
 
     /**
-     * @var Race
+     * @var Race|null
      * @ORM\ManyToOne(targetEntity="App\Entity\Race", inversedBy="driverRaces")
      * @ORM\JoinColumn(name="race", referencedColumnName="id", onDelete="CASCADE")
      */
-    private $race;
+    private ?Race $race = null;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private int $inscriptionStatus = self::PENDING;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private ?string $validationToken = null;
 
     /**
      * @return string
@@ -262,7 +280,7 @@ class DriverRace
      * @param int|null $finishStatus
      * @return $this
      */
-    public function setFinishStatus(?int $finishStatus): self
+    public function setFinishStatus(?int $finishStatus = self::FINISHED): self
     {
         $this->finishStatus = $finishStatus;
 
@@ -278,10 +296,10 @@ class DriverRace
     }
 
     /**
-     * @param mixed $finishPosition
+     * @param int $finishPosition
      * @return DriverRace
      */
-    public function setFinishPosition($finishPosition)
+    public function setFinishPosition(int $finishPosition): DriverRace
     {
         $this->finishPosition = $finishPosition;
 
@@ -319,11 +337,19 @@ class DriverRace
      * @param int|null $penalty
      * @return $this
      */
-    public function setPenalty(?int $penalty): self
+    public function setPenalty(int $penalty): self
     {
         $this->penalty = $penalty;
 
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasBennValidated():bool
+    {
+        return $this->inscriptionStatus === self::VALIDATED;
     }
 
     /**
@@ -339,10 +365,6 @@ class DriverRace
             is_int($this->startPosition)
             &&
             is_int($this->finishPosition)
-            //&&
-            //$this->bestLap !== '00:00:000'
-            //&&
-            //$this->bestLap !== '00:00:000'
             ;
     }
 
@@ -433,10 +455,52 @@ class DriverRace
     {
         $startPosition = 0;
         foreach ($this->race->getDriverRaces() as $driverRace){
-            if($driverRace->getPool() instanceof Pool && $driverRace->getPool()->getId() === $this->pool->getId()){
+            if( $this->pool  instanceof Pool && $driverRace->hasBennValidated() && $driverRace->getPool() instanceof Pool && $driverRace->getPool()->getId() === $this->pool->getId()){
                 $startPosition++;
             }
         }
         $this->startPosition = $startPosition;
     }
+
+    /**
+     * @return int
+     */
+    public function getInscriptionStatus(): int
+    {
+        return $this->inscriptionStatus;
+    }
+
+    /**
+     * @param int $inscriptionStatus
+     * @return $this
+     */
+    public function setInscriptionStatus(int $inscriptionStatus): self
+    {
+        $this->inscriptionStatus = $inscriptionStatus;
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function validateInscription():self
+    {
+        $this->inscriptionStatus = self::VALIDATED;
+
+        return $this;
+    }
+
+    public function getValidationToken(): ?string
+    {
+        return $this->validationToken;
+    }
+
+    public function setValidationToken(?string $validationToken): self
+    {
+        $this->validationToken = $validationToken;
+
+        return $this;
+    }
+    
 }

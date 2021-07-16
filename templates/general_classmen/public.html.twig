@@ -4,8 +4,9 @@
     <div class="container">
         <h2>Race results</h2>
         <p>
+            <div style="text-align: center; font-weight: bolder">Races:</div>
             {% for race in userGroup.races %}
-            <a target="_blank" class="btn btn-link" style="display: block" href="{{ path('event_view',{'id':race.id}) }}#results">{{ race.date | date('Y-m-d H:i:s') }} - {{ race }}</a>
+            <a target="_blank" class="btn btn-link" style="display: block" href="{{ path('event_view',{'id':race.id}) }}#results">{{ race }} - {{ race.date | date('Y-m-d H:i:s') }}</a>
             {% endfor %}
         </p>
     {% include 'general_classmen/tables.html.twig' %}

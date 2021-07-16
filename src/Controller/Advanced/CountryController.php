@@ -56,7 +56,7 @@ class CountryController extends MainController
      */
     public function delete(Request $request, Country $country): Response
     {
-        $this->deleteAction($request,$country);
+        return $this->deleteAction($request,$country);
     }
 
     /**

@@ -14,6 +14,11 @@ class CarType extends AbstractType
         $builder
             ->add('name')
             ->add('maker')
+            ->add('category')
+            ->add('power')
+            ->add('weight')
+            ->add('torque')
+            ->add('transmission')
         ;
     }
 

@@ -17,6 +17,7 @@ use App\Repository\RaceRepository;
 use App\Repository\TeamRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -34,7 +35,6 @@ class RaceInscriptionController extends AbstractController
         if ($race->isValidForInscription()) {
             return $this->render('race_inscription/index.html.twig', [
                 'race' => $race,
-                //'pools' => $poolRepository->findBy(['userGroup'=>$race->getUserGroup()],['priority' => 'asc'])
             ]);
         }
         if ($race->isPassed()) {
@@ -44,10 +44,30 @@ class RaceInscriptionController extends AbstractController
     }
 
     /**
+     * @param string $token
+     * @return Response
+     * @Route("/public/race/inscription/validation/{token}", name="new_public_race_inscription_validation", methods={"GET"})
+     */
+    public function confirmEmail(string $token, DriverRaceRepository $driverRaceRepository):Response
+    {
+        $driverRace = $driverRaceRepository->findOneBy(['validationToken'=>$token]);
+        if(!$driverRace instanceof DriverRace && !$driverRace->getRace()->isPassed()){
+            $driverRace->validateInscription();
+            $this->getDoctrine()->getmanager()->flush();
+            return $this->render('race_inscription/confirm_success.html.twig',['race'=>$driverRace->getRace(), 'user'=>$driverRace->getDriver()]);
+        }
+        return $this->render('race_inscription/not_found.html.twig');
+    }
+
+    /**
      * @Route("/public/race/inscription/new", name="new_public_race_inscription", methods={"POST"})
+     * @param DriverRaceRepository $driverRaceRepository
+     * @param RaceRepository $raceRepository
+     * @param TeamRepository $teamRepository
      * @param CarRepository $carRepository
      * @param DriverRepository $driverRepository
      * @param Request $request
+     * @param EntityManagerInterface $em
      * @return Response
      */
     public function subscribe(DriverRaceRepository $driverRaceRepository, RaceRepository $raceRepository, TeamRepository $teamRepository, CarRepository $carRepository, DriverRepository $driverRepository, Request $request, EntityManagerInterface $em): Response
@@ -55,29 +75,77 @@ class RaceInscriptionController extends AbstractController
         if (!$this->isCsrfTokenValid('new_driver_race_inscription', $request->request->get('token'))) {
             throw new \RuntimeException('Internal error');
         }
-        $race = $raceRepository->find($request->request->get('race'));
-        if ($race instanceof Race) {
-            $driver = $driverRepository->findOneBy(['psn' => $request->request->get('psn'), 'userGroup' => $race->getUserGroup()]);
-            if ($driver instanceof Driver) {
-                $driverRace = $driverRaceRepository->findOneBy(['race' => $race, 'driver' => $driver]);
-                $car = $carRepository->find($request->request->get('car'));
-                if (!$car instanceof Car) {
-                    throw new \RuntimeException('Internal error');
-                }
-                if ($driverRace instanceof DriverRace) {
-                    $driverRace->setCar($car);
-                } else {
-                    $driverRace = (new DriverRace())->setRace($race)->setCar($car)->setDriver($driver);
-                    if ($driver->getPool() instanceof Pool) {
-                        $driverRace->setPool($driver->getPool());
+        $validationToken = sha1(uniqid('driver_race', true) . microtime());
+        $email = trim($request->request->get('email'));
+        if($email !== '' && preg_match('/^.+@.+\..+$/', $email)){
+            $race = $raceRepository->find($request->request->get('race'));
+            if ($race instanceof Race) {
+                $psn = trim($request->request->get('psn'));
+                if($psn !== '' && preg_match('/^\w/', $psn)){
+                    $this->sendVerificationEmail($email, $psn, $race);
+                    $driver = $driverRepository->findOneBy(['psn' => $psn, 'userGroup' => $race->getUserGroup()]);
+                    if (!$driver instanceof Driver) {
+                        $driver = new Driver();
+                        $driver->setPsn(trim($request->request->get('psn')))->setUserGroup($race->getUserGroup());
+                        $em->persist($driver);
+                        $em->flush();
                     }
-                    $em->persist($driverRace);
+                    if ($request->request->has('team') && strlen($request->request->get('team')) > 1) {
+                        $team = $teamRepository->findOneBy(['name' => trim($request->request->get('team')), 'userGroup' => $race->getUserGroup()]);
+                        if (!$team instanceof Team) {
+                            $team = (new Team())->setName(trim($request->request->get('team')))->setUserGroup($race->getUserGroup());
+                            $em->persist($team);
+                            $em->flush();
+                        }
+                        $driver->setTeam($team);
+                    }
+                    $driverRace = $driverRaceRepository->findOneBy(['race' => $race, 'driver' => $driver]);
+                    $car = $carRepository->find($request->request->get('car'));
+                    if (!$car instanceof Car) {
+                        throw new \RuntimeException('Internal error');
+                    }
+                    if ($driverRace instanceof DriverRace) {
+                        $driverRace->setCar($car);
+                    } else {
+                        $driverRace = (new DriverRace())->setRace($race)->setCar($car)->setDriver($driver);
+                        if ($driver->getPool() instanceof Pool) {
+                            $driverRace->setPool($driver->getPool());
+                        }
+                        $em->persist($driverRace);
+                    }
+                    $driverRace->setValidationToken($validationToken);
+                    $em->flush();
+                    return new Response('OK');
                 }
-                $em->flush();
-                return new Response('OK');
             }
-            throw new \RuntimeException('Driver not found!');
         }
         throw new \RuntimeException('Internal error');
+    }
+
+    /**
+     * @param string $email
+     * @param string $psn
+     * @param Race $race
+     */
+    protected function sendVerificationEmail(string $email, string $psn, Race $race): void
+    {
+        $to = $email;
+        $subject = "email confirmation";
+        $message = $this->renderView(
+            'race_inscription/email_confirm.html.twig',
+            [
+                'user' => $psn,
+                'link' => $this->generateUrl('new_public_race_inscription_validation'),
+                'race' => $race
+            ]
+        );
+        $headers = [
+            'From: admin@gtsportchamp.leda-concept.com',
+            'Reply-To: admin@gtsportchamp.leda-concept.com',
+            'MIME-Version: 1.0',
+            'Content-type: text/html; charset=iso-8859-1',
+            'X-Mailer: PHP/' . PHP_VERSION,
+        ];
+        mail($to, $subject, $message, implode("\r\n", $headers));
     }
 }

@@ -10,17 +10,18 @@
     <div class="container">
         <h1 style="color: #fefefe; ">{{ race }}</h1>
         <h1 id="event_title" style="color: #fefefe; display: none">{{ race }}</h1>
-        <h2>Organized by
+        <h3>Organized by
             <i>{{ race.userGroup }}</i>
             <p>
                 {% for user in race.userGroup.accounts %}
                     <span style="font-size: 0.8em">- {{ user.username }}</span><br>
                 {% endfor %}
             </p>
-            {% if race.userGroup.imageUrl is not empty %}<br><img style="width: 150px"
-                                                                  src="{{ race.userGroup.imageUrl }}" alt=""/>
+            {% if race.userGroup.imageUrl is not empty %}
+                <br>
+                <img style="width: 150px"  src="{{ race.userGroup.imageUrl }}" alt=""/>
             {% endif %}
-        </h2>
+        </h3>
         <h2 style="color: #fefefe">{% if race.isPassed == false %}
             <div
                     class="countdown"
@@ -86,8 +87,8 @@
                 </p>
             {% endif %}
             <p>
-                {% if race.cars | length == 1 %}
-                <strong>Mono type:</strong> {{ race.cars[0] }}
+            {% if race.cars | length == 1 %}
+                <strong>Mono type:</strong> <img style="border: solid 1px #b3d7ff" src="{{ race.cars[0].imageSrc }}" alt=""> {{ race.cars[0] }}
                 {% for carConfiguration in race.carConfigurations %}
             <ul>
                 {% if carConfiguration.car.id == race.cars[0].id %}
@@ -100,8 +101,8 @@
             <strong>Cars:</strong>
             <div class="row">
                 {% for car in race.cars %}
-                    <div class="col" style="word-break: keep-all; white-space: nowrap; border: #b3d7ff dotted 1px">
-                        <strong>{{ car.maker.name }}</strong> - <i>{{ car.name }}</i>
+                    <div class="col" style="word-break: keep-all; white-space: nowrap; border: #b3d7ff dotted 1px; padding-top: 5px">
+                        <img style="border: solid 1px #b3d7ff" src="{{ car.imageSrc }}" alt=""> <strong>{{ car.maker.name }}</strong> - <i>{{ car.name }}</i>
                         <ul>
                             {% for carConfiguration in race.carConfigurations %}
                                 {% if carConfiguration.car.id == car.id %}
@@ -138,8 +139,8 @@
     <hr>
     <div style="text-align: center">
         <span class="btn btn-link" id="race_terms_show">Race Terms</span>
-        {#    -#}
-        {#    <span class="btn btn-link" id="general_terms_show">General Terms</span>#}
+        {# -#}
+        {# <span class="btn btn-link" id="general_terms_show">General Terms</span> #}
     </div>
 
 
