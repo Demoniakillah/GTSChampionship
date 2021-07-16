@@ -7,13 +7,14 @@
     <title>confirmation</title>
 </head>
 <body>
-<h3>Hi {{ user }},</h3>
+<p>Hi <strong>{{ user }}</strong>,</p>
 <p>
     Thanks for your subscribe,<br>
-    Please click on the following link to finish your inscription to the race <strong>{{ race }}</strong> at {{ race.date | date('Y-m-d H:i:s') }}
+    Please click on the following link to finish your inscription to the race <strong>{{ race }}</strong> at {{ race.date | date('Y-m-d H:i:s') }}<br>
+    <a href="{{ link }}" target="_blank">{{ link }}</a>
 </p>
-<p style="text-align: center">
-    <img src="{{ race.imageUrl }}" alt="">
+<p style="text-align: center; width: 100%">
+    <img src="{{ race.imageUrl }}" alt="" style="width: 50%">
 </p>
 </body>
 </html>
