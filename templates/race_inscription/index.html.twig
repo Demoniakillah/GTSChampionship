@@ -4,6 +4,7 @@
     {% include 'event_view/js.html.twig' %}
     <script type="text/javascript">
         $(document).ready(() => {
+            $('#psn').focusin()
             $('#register').on('click', function () {
                 if ($('#psn').val().length < 3 || $('#psn').val().match(/^\w+$/) === null) {
                     $('#psn').css('border', '1px solid #dc3545')
@@ -48,8 +49,7 @@
         <h1 id="event_title" style="color: #fefefe; display: none">{{ race }}</h1>
         <h2>Organized by
             <i>{{ race.userGroup }}</i>
-            {% if race.userGroup.imageUrl is not empty %}<br><img style="width: 150px"
-                                                                  src="{{ race.userGroup.imageUrl }}" alt=""/>
+            {% if race.userGroup.imageUrl is not empty %}<br><img style="width: 150px" src="{{ race.userGroup.imageUrl }}" alt=""/>
             {% endif %}
         </h2>
         <h2 style="color: #fefefe">{% if race.isPassed == false %}

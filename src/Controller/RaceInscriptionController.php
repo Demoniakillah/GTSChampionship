@@ -82,7 +82,7 @@ class RaceInscriptionController extends AbstractController
             if ($race instanceof Race) {
                 $psn = trim($request->request->get('psn'));
                 if($psn !== '' && preg_match('/^\w/', $psn)){
-                    $this->sendVerificationEmail($email, $psn, $race);
+                    $this->sendVerificationEmail($email, $psn, $race, $validationToken);
                     $driver = $driverRepository->findOneBy(['psn' => $psn, 'userGroup' => $race->getUserGroup()]);
                     if (!$driver instanceof Driver) {
                         $driver = new Driver();
@@ -127,7 +127,7 @@ class RaceInscriptionController extends AbstractController
      * @param string $psn
      * @param Race $race
      */
-    protected function sendVerificationEmail(string $email, string $psn, Race $race): void
+    protected function sendVerificationEmail(string $email, string $psn, Race $race, string $validationToken): void
     {
         $to = $email;
         $subject = "email confirmation";
@@ -135,8 +135,8 @@ class RaceInscriptionController extends AbstractController
             'race_inscription/email_confirm.html.twig',
             [
                 'user' => $psn,
-                'link' => $this->generateUrl('new_public_race_inscription_validation'),
-                'race' => $race
+                'link' => $this->generateUrl('new_public_race_inscription_validation', ['token'=>$validationToken]),
+                'race' => $race,
             ]
         );
         $headers = [

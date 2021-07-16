@@ -131,7 +131,7 @@ $(document).ready(() => {
                                         data: data,
                                         success: function () {
                                             if (reload) {
-                                               // window.location.reload()
+                                                window.location.reload()
                                             }
                                             confirm.close()
                                         },
