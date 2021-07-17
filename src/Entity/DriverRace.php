@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\DriverRaceRepository;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 
@@ -118,6 +120,11 @@ class DriverRace
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private ?string $validationToken = null;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $creationDate;
 
     /**
      * @return string
@@ -347,7 +354,7 @@ class DriverRace
     /**
      * @return bool
      */
-    public function hasBennValidated():bool
+    public function hasBennValidated(): bool
     {
         return $this->inscriptionStatus === self::VALIDATED;
     }
@@ -364,8 +371,7 @@ class DriverRace
             &&
             is_int($this->startPosition)
             &&
-            is_int($this->finishPosition)
-            ;
+            is_int($this->finishPosition);
     }
 
     /**
@@ -432,17 +438,20 @@ class DriverRace
         return $this->pool->getPoints()[count($this->pool->getPoints()) - 1] + $this->bonus - $this->penalty;
     }
 
+    /**
+     * @return int
+     */
     public function getFinalPosition(): int
     {
         $results = [];
-        foreach ($this->getRace()->getDriverRaces() as $driverRace){
-            $results[] = ['psn'=>$driverRace->getDriver()->getPsn(),'points'=>$driverRace->getPoints()];
+        foreach ($this->getRace()->getDriverRaces() as $driverRace) {
+            $results[] = ['psn' => $driverRace->getDriver()->getPsn(), 'points' => $driverRace->getPoints()];
         }
-        usort($results, static function($a,$b){
+        usort($results, static function ($a, $b) {
             return $a['points'] < $b['points'];
         });
         $psn = $this->getDriver()->getPsn();
-        $results = array_filter($results, static function($a) use ($psn){
+        $results = array_filter($results, static function ($a) use ($psn) {
             return $a['psn'] === $psn;
         });
         return key($results);
@@ -451,11 +460,11 @@ class DriverRace
     /**
      * @ORM\PrePersist()
      */
-    public function setStartPositionOnPersist():void
+    public function setStartPositionOnPersist(): void
     {
         $startPosition = 0;
-        foreach ($this->race->getDriverRaces() as $driverRace){
-            if( $this->pool  instanceof Pool && $driverRace->hasBennValidated() && $driverRace->getPool() instanceof Pool && $driverRace->getPool()->getId() === $this->pool->getId()){
+        foreach ($this->race->getDriverRaces() as $driverRace) {
+            if ($this->pool instanceof Pool && $driverRace->hasBennValidated() && $driverRace->getPool() instanceof Pool && $driverRace->getPool()->getId() === $this->pool->getId()) {
                 $startPosition++;
             }
         }
@@ -484,23 +493,60 @@ class DriverRace
     /**
      * @return $this
      */
-    public function validateInscription():self
+    public function validateInscription(): self
     {
         $this->inscriptionStatus = self::VALIDATED;
 
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getValidationToken(): ?string
     {
         return $this->validationToken;
     }
 
+    /**
+     * @param string|null $validationToken
+     * @return $this
+     */
     public function setValidationToken(?string $validationToken): self
     {
         $this->validationToken = $validationToken;
 
         return $this;
     }
-    
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getCreationDate(): ?DateTimeInterface
+    {
+        return $this->creationDate;
+    }
+
+    /**
+     * @param DateTimeInterface|null $creationDate
+     * @return $this
+     */
+    public function setCreationDate(?DateTimeInterface $creationDate): self
+    {
+        $this->creationDate = $creationDate;
+
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist()
+     * @return $this
+     **/
+    public function setCreationDateOnPrePersist(): self
+    {
+        $this->creationDate = new DateTime;
+
+        return $this;
+    }
+
 }

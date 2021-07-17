@@ -3,6 +3,9 @@
 {% block title %}{{ race.name }}{% endblock %}
 
 {% block javascripts %}
+    <script>
+        const alert=false
+    </script>
     {% include 'event_view/js.html.twig' %}
 {% endblock %}
 
@@ -134,7 +137,7 @@
     {% if race.isPassed == false %}
         <hr>
         <a class="col-12 btn btn-primary" href="{{ path('public_race_inscription',{'id':race.id}) }}">Subscribe to this
-            race</a>
+            race - <span id="places_left"></span></a>
     {% endif %}
     <hr>
     <div style="text-align: center">

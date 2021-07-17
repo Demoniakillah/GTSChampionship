@@ -2,6 +2,36 @@
 <script type="text/javascript" src="{{ asset('countdown.js') }}"></script>
 <script type="text/javascript">
     $(document).ready(function () {
+
+        function updatePlacesLeft() {
+            $.get({
+                url: "{{ path('public_race_inscription_places_left', {'id':race.id}) }}",
+                success: function (nb) {
+                    if(nb < 1){
+                        $('#places_left').parent('.btn').remove()
+                        if (alert === true){
+                            $.alert({
+                                title: '',
+                                content: '<span class="text-danger">Sorry, No left places for race :(</span>',
+                                buttons: {
+                                    ok: function () {
+                                        console.log('OK')
+                                        window.location.href = "{{ path('event_view', {'id':race.id}) }}"
+                                    }
+                                }
+                            })
+                        }
+                    } else {
+                        $('#places_left').text(nb + ' places left')
+                        setTimeout(function () {
+                            updatePlacesLeft();
+                        },1500)
+                    }
+                }
+            })
+        }
+
+        updatePlacesLeft();
         countdown()
         $('#show_race_params').on('click', function () {
             $.dialog({

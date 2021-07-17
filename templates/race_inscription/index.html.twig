@@ -1,6 +1,9 @@
 {% extends 'base_public.html.twig' %}
 {% block title %}{{ race.name }} - Inscription{% endblock %}
 {% block javascripts %}
+    <script>
+        const alert=true
+    </script>
     {% include 'event_view/js.html.twig' %}
     <script type="text/javascript">
         $(document).ready(() => {
@@ -199,7 +202,7 @@
                         <input type="text" class="form-control" required id="email" placeholder="@">
                     </div>
                 </div>
-                <div class="btn btn-success col-12" id="register">Register</div>
+                <div class="btn btn-success col-12" id="register">Register - <span id="places_left"></span></div>
                 <input type="hidden" id="csrf_token" value="{{ csrf_token('new_driver_race_inscription') }}">
             </div>
         </div>

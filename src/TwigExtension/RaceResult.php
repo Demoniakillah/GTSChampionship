@@ -54,7 +54,7 @@ class RaceResult extends AbstractExtension
     {
         $teamPoints = [];
         $podium = $this->getPodium($driverRaces, true);
-        foreach ($podium as $pool => $results) {
+        foreach ($podium as $results) {
             foreach ($results as $result) {
                 if ($result->getDriver()->getTeam() instanceof Team) {
                     if (isset($teamPoints[$result->getDriver()->getTeam()->getName()])) {
@@ -222,13 +222,13 @@ class RaceResult extends AbstractExtension
      * @param bool $full
      * @return DriverRace[]
      */
-    public function getPodium($driverRaces, $full = false): array
+    public function getPodium($driverRaces, bool $full = false): array
     {
         $poolPriority = [];
         $podiumByPool = [];
         $driverRacesByPool = [];
         foreach ($driverRaces as $i => $driverRace) {
-            if ($driverRace->isValid() || $driverRace->isValidButDisconnected() || $driverRace->isValidButMissing()) {
+            if ($driverRace->hasBennValidated() && ($driverRace->isValid() || $driverRace->isValidButDisconnected() || $driverRace->isValidButMissing())) {
                 $driverRacesByPool[$driverRace->getPool()->getName()][$i] = $driverRace;
             }
         }
@@ -274,8 +274,8 @@ class RaceResult extends AbstractExtension
         if ($driverRaces instanceof PersistentCollection) {
             $driverRaces = $driverRaces->toArray();
         }
-        $driverRaces = array_filter($driverRaces, static function ($a) {
-            return $a->getBestLap() !== '00:00:000';
+        $driverRaces = array_filter($driverRaces, static function (DriverRace $a) {
+            return $a->getBestLap() !== '00:00:000' && $a->hasBeenValidated();
         });
         usort($driverRaces, static function (DriverRace $a, DriverRace $b) {
             return (int)str_replace(':', '', $a->getBestLap()) > (int)str_replace(':', '', $b->getBestLap());

@@ -12,6 +12,8 @@ use App\Entity\Terms;
 use App\Repository\CarRepository;
 use App\Repository\DriverRaceRepository;
 use App\Repository\DriverRepository;
+use App\Repository\PoolConfigurationRepository;
+use App\Repository\PoolParameterRepository;
 use App\Repository\PoolRepository;
 use App\Repository\RaceRepository;
 use App\Repository\TeamRepository;
@@ -25,6 +27,29 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class RaceInscriptionController extends AbstractController
 {
+
+
+    /**
+     * @Route("/public/race/places/left/{id}", name="public_race_inscription_places_left", requirements={"id"="\d+"}, methods={"GET"})
+     * @param Race $race
+     * @param PoolConfigurationRepository $poolConfigurationRepository
+     * @param PoolRepository $poolRepository
+     * @return JsonResponse
+     */
+    public function leftPlaces(Race $race, PoolConfigurationRepository  $poolConfigurationRepository, PoolRepository $poolRepository): JsonResponse
+    {
+        $pools = $poolRepository->findBy(['userGroup' => $race->getUserGroup()]);
+        $nbPools = count($pools);
+        $maxByPool = (int)$poolConfigurationRepository->findOneBy(['name'=>'max_drivers'])->getValue();
+        $nbPlacesTotal = $maxByPool * $nbPools;
+        foreach ($race->getDriverRaces() as $driverRace){
+            if($driverRace->hasBennValidated()){
+                $nbPlacesTotal--;
+            }
+        }
+        return $this->json($nbPlacesTotal);
+    }
+
     /**
      * @Route("/public/race/inscription/{id}", name="public_race_inscription", requirements={"id"="\d+"}, methods={"GET"})
      * @param Race $race
