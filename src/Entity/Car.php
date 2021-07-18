@@ -78,7 +78,7 @@ class Car
      */
     public function __toString():string
     {
-        return $this->maker->getName() . ' ' . $this->name;
+        return $this->maker->getName() . ' ' . $this->name . ' - ' . $this->category;
     }
 
     /**
