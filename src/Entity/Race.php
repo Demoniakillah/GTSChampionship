@@ -73,8 +73,8 @@ class Race
      * @ORM\ManyToMany(targetEntity="App\Entity\Car")
      * @ORM\JoinTable(
      *     name="race_cars",
-     *     joinColumns={@ORM\JoinColumn(name="car", referencedColumnName="id")},
-     *     inverseJoinColumns={@ORM\JoinColumn(name="race", referencedColumnName="id")}
+     *     joinColumns={@ORM\JoinColumn(name="race", referencedColumnName="id")},
+     *     inverseJoinColumns={@ORM\JoinColumn(name="car", referencedColumnName="id")}
      * )
      */
     private $cars;
