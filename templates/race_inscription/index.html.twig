@@ -123,7 +123,7 @@
                 {% endif %}
                 <p>
                     {% if race.cars | length == 1 %}
-                    <strong>Mono type:</strong> <img style="border: solid 1px #b3d7ff" src="{{ race.cars[0].imageSrc }}" alt=""> {{ race.cars[0] }}
+                    <strong>Mono type:</strong> <img style="border: solid 1px #b3d7ff" src="{{ race.cars[0].imageSrc }}" alt=""> {{ race.cars[0] }} - {{ race.cars[0].category }}
                     {% for carConfiguration in race.carConfigurations %}
                 <ul>
                     {% if carConfiguration.car.id == race.cars[0].id %}
@@ -138,7 +138,7 @@
                     {% for car in race.cars %}
                         <div class="col" style="word-break: keep-all; white-space: nowrap; border: #b3d7ff dotted 1px; padding-top: 5px">
                             <img style="border: solid 1px #b3d7ff" src="{{ car.imageSrc }}" alt="">
-                            <strong>{{ car.maker.name }}</strong> - <i>{{ car.name }}</i>
+                            <strong>{{ car.maker.name }}</strong> - <i>{{ car.name }} - {{ car.category }}</i>
                             <ul>
                                 {% for carConfiguration in race.carConfigurations %}
                                     {% if carConfiguration.car.id == car.id %}
