@@ -3,12 +3,15 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Table(name="admin_user")
  * @ORM\Entity(repositoryClass=UserRepository::class)
+ * @ORM\HasLifecycleCallbacks()
  */
 class User implements UserInterface
 {
@@ -17,13 +20,12 @@ class User implements UserInterface
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private ?int $id;
+    private ?int $id = null;
 
     /**
-     * @var string
      * @ORM\Column(type="string", length=180, unique=true)
      */
-    private string $username;
+    private ?string $username = null;
 
     /**
      * @ORM\Column(type="json")
@@ -31,10 +33,9 @@ class User implements UserInterface
     private array $roles = [];
 
     /**
-     * @var string The hashed password
      * @ORM\Column(type="string")
      */
-    private string $password;
+    private ?string $password = null;
 
     /**
      * @var UserGroup
@@ -44,9 +45,80 @@ class User implements UserInterface
     private UserGroup $userGroup;
 
     /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private ?DateTimeInterface $creationDate = null;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private ?DateTimeInterface $updateDate = null;
+
+    /**
+     * @ORM\PrePersist()
+     * @return $this
+     **/
+    public function setCreationDateOnPrePersist(): self
+    {
+        $this->creationDate = new DateTime;
+
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist()
+     * @ORM\PreUpdate()
+     * @return $this
+     **/
+    public function setUpdateDateOnUpdate(): self
+    {
+        $this->updateDate = new DateTime;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getCreationDate(): ?DateTimeInterface
+    {
+        return $this->creationDate;
+    }
+
+    /**
+     * @param DateTimeInterface|null $creationDate
+     * @return $this
+     */
+    public function setCreationDate(?DateTimeInterface $creationDate): self
+    {
+        $this->creationDate = $creationDate;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getUpdateDate(): ?DateTimeInterface
+    {
+        return $this->updateDate;
+    }
+
+    /**
+     * @param DateTimeInterface|null $updateDate
+     * @return $this
+     */
+    public function setUpdateDate(?DateTimeInterface $updateDate): self
+    {
+        $this->updateDate = $updateDate;
+
+        return $this;
+    }
+
+    /**
      * @return string
      */
-    public function __toString()
+    public function __toString():string
     {
         return $this->username;
     }

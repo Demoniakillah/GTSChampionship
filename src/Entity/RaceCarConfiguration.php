@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\RaceCarConfigurationRepository;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -12,43 +14,111 @@ use Doctrine\ORM\Mapping as ORM;
  *              name="race_car_parameter_idx",
  *              columns={"race","car","parameter"}
  *          )
- *     }) */
+ *     })
+ * @ORM\HasLifecycleCallbacks()
+ */
 class RaceCarConfiguration
 {
     /**
-     * @var integer
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private int $id;
+    private ?int $id = null;
 
     /**
-     * @var Race
      * @ORM\ManyToOne(targetEntity="App\Entity\Race", inversedBy="carConfigurations")
      * @ORM\JoinColumn(name="race", referencedColumnName="id")
      */
-    private Race $race;
+    private ?Race $race = null;
 
     /**
-     * @var Car
      * @ORM\ManyToOne(targetEntity="App\Entity\Car")
      * @ORM\JoinColumn(name="car", referencedColumnName="id")
      */
-    private Car $car;
+    private ?Car $car = null;
 
     /**
-     * @var RaceCarParameter
      * @ORM\ManyToOne(targetEntity="App\Entity\RaceCarParameter")
      * @ORM\JoinColumn(name="parameter", referencedColumnName="id")
      */
-    private RaceCarParameter $parameter;
+    private ?RaceCarParameter $parameter = null;
 
     /**
-     * @var integer
      * @ORM\Column(type="integer")
      */
-    private int $value = 0;
+    private ?int $value = 0;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private ?DateTimeInterface $creationDate = null;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private ?DateTimeInterface $updateDate = null;
+
+    /**
+     * @ORM\PrePersist()
+     * @return $this
+     **/
+    public function setCreationDateOnPrePersist(): self
+    {
+        $this->creationDate = new DateTime;
+
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist()
+     * @ORM\PreUpdate()
+     * @return $this
+     **/
+    public function setUpdateDateOnUpdate(): self
+    {
+        $this->updateDate = new DateTime;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getCreationDate(): ?DateTimeInterface
+    {
+        return $this->creationDate;
+    }
+
+    /**
+     * @param DateTimeInterface|null $creationDate
+     * @return $this
+     */
+    public function setCreationDate(?DateTimeInterface $creationDate): self
+    {
+        $this->creationDate = $creationDate;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getUpdateDate(): ?DateTimeInterface
+    {
+        return $this->updateDate;
+    }
+
+    /**
+     * @param DateTimeInterface|null $updateDate
+     * @return $this
+     */
+    public function setUpdateDate(?DateTimeInterface $updateDate): self
+    {
+        $this->updateDate = $updateDate;
+
+        return $this;
+    }
 
     /**
      * @return int

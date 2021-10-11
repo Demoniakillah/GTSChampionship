@@ -6,7 +6,6 @@ use App\Repository\DriverRaceRepository;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 
 /**
  * @ORM\Entity(repositoryClass=DriverRaceRepository::class)
@@ -124,7 +123,73 @@ class DriverRace
     /**
      * @ORM\Column(type="datetime", nullable=true)
      */
-    private $creationDate;
+    private ?DateTimeInterface $creationDate = null;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private ?DateTimeInterface $updateDate = null;
+
+    /**
+     * @ORM\PrePersist()
+     * @return $this
+     **/
+    public function setCreationDateOnPrePersist(): self
+    {
+        $this->creationDate = new DateTime;
+
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist()
+     * @ORM\PreUpdate()
+     * @return $this
+     **/
+    public function setUpdateDateOnUpdate(): self
+    {
+        $this->updateDate = new DateTime;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getCreationDate(): ?DateTimeInterface
+    {
+        return $this->creationDate;
+    }
+
+    /**
+     * @param DateTimeInterface|null $creationDate
+     * @return $this
+     */
+    public function setCreationDate(?DateTimeInterface $creationDate): self
+    {
+        $this->creationDate = $creationDate;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getUpdateDate(): ?DateTimeInterface
+    {
+        return $this->updateDate;
+    }
+
+    /**
+     * @param DateTimeInterface|null $updateDate
+     * @return $this
+     */
+    public function setUpdateDate(?DateTimeInterface $updateDate): self
+    {
+        $this->updateDate = $updateDate;
+
+        return $this;
+    }
 
     /**
      * @return string
@@ -515,36 +580,6 @@ class DriverRace
     public function setValidationToken(?string $validationToken): self
     {
         $this->validationToken = $validationToken;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeInterface|null
-     */
-    public function getCreationDate(): ?DateTimeInterface
-    {
-        return $this->creationDate;
-    }
-
-    /**
-     * @param DateTimeInterface|null $creationDate
-     * @return $this
-     */
-    public function setCreationDate(?DateTimeInterface $creationDate): self
-    {
-        $this->creationDate = $creationDate;
-
-        return $this;
-    }
-
-    /**
-     * @ORM\PrePersist()
-     * @return $this
-     **/
-    public function setCreationDateOnPrePersist(): self
-    {
-        $this->creationDate = new DateTime;
 
         return $this;
     }

@@ -25,6 +25,31 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class ApiDriverRaceController extends AbstractController
 {
+
+
+    /**
+     * @Route("/quick/manage/data/update/driver/car", name="api_update_driver_car_quick_manage", methods={"POST"})
+     * @param Request $request
+     * @param DriverRaceRepository $driverRaceRepository
+     * @param CarRepository $carRepository
+     * @return JsonResponse
+     */
+    public function updateDriverRaceCar(Request  $request, DriverRaceRepository $driverRaceRepository, CarRepository $carRepository):JsonResponse
+    {
+        if($request->request->has('id') && $request->request->has('car') && $request->request->get('id') !== '' && $request->request->get('car') !== ''){
+            $inscription = $driverRaceRepository->find($request->request->get('id'));
+            if($inscription instanceof DriverRace){
+                $car = $carRepository->find($request->request->get('car'));
+                if($car instanceof Car){
+                    $inscription->setCar($car);
+                    $this->getDoctrine()->getManager()->flush();
+                    return $this->json(true);
+                }
+            }
+        }
+        throw new \RuntimeException("Internal error");
+    }
+
     /**
      * @Route("/random/start/grill", name="api_random_start_grill")
      * @param Request $request
@@ -105,6 +130,7 @@ class ApiDriverRaceController extends AbstractController
         if (!$inscription instanceof DriverRace) {
             $inscription = new DriverRace();
             $inscription
+                ->validateInscription()
                 ->setCar($carRepository->find($request->request->get('car')))
                 ->setRace($race)
                 ->setStartPosition($request->request->get('position'))

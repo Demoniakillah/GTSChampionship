@@ -109,7 +109,17 @@
             })
 
             function update_race_driver_car_on_change(driver_race_id, car_id){
-                console.log('update diver race car')
+                $.post({
+                    url: "{{ path('api_update_driver_car_quick_manage') }}",
+                    data: {id: driver_race_id, car: car_id},
+                    dataType: 'json',
+                    error: function (errorMsg) {
+                        $.alert({
+                            title: 'Error!',
+                            content: errorMsg.responseText
+                        })
+                    }
+                })
             }
 
             let sortable = $(".drivers_pool_connection").sortable({
@@ -119,7 +129,6 @@
                     let li = $(ui.item);
                     let ul = li.parent('ul');
                     if (ul.hasClass('pool_list')) {
-                        console.log(li.children('select').length)
                         if (li.children('select').length === 0) {
                             let label = document.createElement('label')
                             label.append('Car:')

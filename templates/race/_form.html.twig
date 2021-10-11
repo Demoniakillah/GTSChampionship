@@ -5,7 +5,6 @@
 {% else %}
     <button class="btn">{{ button_label|default('Save') }}</button>
 {% endif %}{{ form_end(form) }}
-
 <script>
     $(document).ready(() => {
         $.each($('select'), function () {
@@ -17,8 +16,37 @@
             }
             $(this).css('display', 'inline-block')
         })
-        function carCategoryFilter(){
-            $('.car_category')
+
+        function carCategoryFilter(idCat){
+            $.post({
+                url: "{{ path('api_get_cars_by_category') }}",
+                data: {category: parseInt(idCat) },
+                dataType: 'json',
+                success: function (data) {
+                    $('#race_cars').empty()
+                    $.each(data, function (maker, cars) {
+                        let optionGroup = document.createElement('optgroup')
+                        optionGroup.label = maker
+                        $.each(cars, function (id, car) {
+                            let option = document.createElement('option')
+                            option.append(car)
+                            option.value = id
+                            optionGroup.append(option)
+                        })
+                        $('#race_cars').append(optionGroup)
+                    })
+                },
+                error: function (errorMsg) {
+                    $.alert({
+                        title: 'Error!',
+                        content: errorMsg.responseText
+                    })
+                }
+            })
         }
+
+        $('.car_category').on('change', function () {
+            carCategoryFilter($(this).val())
+        })
     })
 </script>

@@ -15,7 +15,6 @@
                                 content: '<span class="text-danger">Sorry, No left places for race :(</span>',
                                 buttons: {
                                     ok: function () {
-                                        console.log('OK')
                                         window.location.href = "{{ path('event_view', {'id':race.id}) }}"
                                     }
                                 }

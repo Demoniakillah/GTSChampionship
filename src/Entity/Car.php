@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CarRepository;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -13,7 +15,9 @@ use Doctrine\ORM\Mapping as ORM;
  *              name="maker_cars_idx",
  *              columns={"maker","name"}
  *          )
- *     }) */
+ *     })
+ * @ORM\HasLifecycleCallbacks()
+ */
 class Car
 {
     /**
@@ -21,14 +25,13 @@ class Car
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private ?int $id;
+    private ?int $id = null;
 
     /**
-     * @var Maker
      * @ORM\ManyToOne(targetEntity="App\Entity\Maker", inversedBy="cars")
      * @ORM\JoinColumn(name="maker", referencedColumnName="id")
      */
-    private Maker $maker;
+    private ?Maker $maker = null;
 
     /**
      * @var CarCategory|null
@@ -40,7 +43,7 @@ class Car
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private string $name;
+    private ?string $name = '';
 
     /**
      * @var DriverRace[]
@@ -56,22 +59,93 @@ class Car
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $power;
+    private ?string $power = '';
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $torque;
+    private ?string $torque = '';
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $weight;
+    private ?string $weight = '';
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $transmission;
+    private ?string $transmission = '';
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private ?DateTimeInterface $creationDate = null;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private ?DateTimeInterface $updateDate = null;
+
+    /**
+     * @ORM\PrePersist()
+     * @return $this
+     **/
+    public function setCreationDateOnPrePersist(): self
+    {
+        $this->creationDate = new DateTime;
+
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist()
+     * @ORM\PreUpdate()
+     * @return $this
+     **/
+    public function setUpdateDateOnUpdate(): self
+    {
+        $this->updateDate = new DateTime;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getCreationDate(): ?DateTimeInterface
+    {
+        return $this->creationDate;
+    }
+
+    /**
+     * @param DateTimeInterface|null $creationDate
+     * @return $this
+     */
+    public function setCreationDate(?DateTimeInterface $creationDate): self
+    {
+        $this->creationDate = $creationDate;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getUpdateDate(): ?DateTimeInterface
+    {
+        return $this->updateDate;
+    }
+
+    /**
+     * @param DateTimeInterface|null $updateDate
+     * @return $this
+     */
+    public function setUpdateDate(?DateTimeInterface $updateDate): self
+    {
+        $this->updateDate = $updateDate;
+
+        return $this;
+    }
 
     /**
      * @return string
@@ -92,7 +166,7 @@ class Car
     /**
      * @return DriverRace[]
      */
-    public function getRaces(): array
+    public function getRaces()
     {
         return $this->races;
     }
@@ -201,11 +275,18 @@ class Car
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getPower(): ?string
     {
         return $this->power;
     }
 
+    /**
+     * @param string|null $power
+     * @return $this
+     */
     public function setPower(?string $power): self
     {
         $this->power = $power;
@@ -213,11 +294,18 @@ class Car
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getTorque(): ?string
     {
         return $this->torque;
     }
 
+    /**
+     * @param string|null $torque
+     * @return $this
+     */
     public function setTorque(?string $torque): self
     {
         $this->torque = $torque;
@@ -225,11 +313,18 @@ class Car
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getWeight(): ?string
     {
         return $this->weight;
     }
 
+    /**
+     * @param string|null $weight
+     * @return $this
+     */
     public function setWeight(?string $weight): self
     {
         $this->weight = $weight;
@@ -237,11 +332,18 @@ class Car
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getTransmission(): ?string
     {
         return $this->transmission;
     }
 
+    /**
+     * @param string|null $transmission
+     * @return $this
+     */
     public function setTransmission(?string $transmission): self
     {
         $this->transmission = $transmission;

@@ -15,12 +15,12 @@ class Terms
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id = null;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $text;
+    private ?string $text = '';
 
     /**
      * @var UserGroup
@@ -75,9 +75,9 @@ class Terms
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function __toString()
+    public function __toString():string
     {
         return $this->text;
     }

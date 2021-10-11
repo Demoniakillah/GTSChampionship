@@ -18,6 +18,7 @@ use Doctrine\ORM\Mapping\UniqueConstraint;
  *              columns={"user_group","name"}
  *          )
  *     })
+ * @ORM\HasLifecycleCallbacks()
  */
 class Race
 {
@@ -26,17 +27,17 @@ class Race
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id = null;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      */
-    private string $name;
+    private ?string $name = '';
 
     /**
      * @ORM\Column(type="datetime")
      */
-    private DateTimeInterface $date;
+    private ?DateTimeInterface $date = null;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -62,11 +63,10 @@ class Race
     private $poolSaloonLabels;
 
     /**
-     * @var Track
      * @ORM\ManyToOne(targetEntity="App\Entity\Track")
      * @ORM\JoinColumn(name="track", referencedColumnName="id")
      */
-    private $track;
+    private ?Track $track = null;
 
     /**
      * @var Car[]
@@ -98,7 +98,6 @@ class Race
     private $carConfigurations;
 
     /**
-     * @var string|null
      * @ORM\Column(name="more_details", type="text", nullable=true)
      */
     private ?string $moreDetails;
@@ -111,7 +110,7 @@ class Race
     /**
      * @ORM\Column(type="string", length=500, nullable=true)
      */
-    private ?string $imageUrl;
+    private ?string $imageUrl = '';
 
     /**
      * @var UserGroup
@@ -119,6 +118,77 @@ class Race
      * @ORM\JoinColumn(name="user_group", referencedColumnName="id")
      */
     private UserGroup $userGroup;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private ?DateTimeInterface $creationDate = null;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private ?DateTimeInterface $updateDate = null;
+
+    /**
+     * @ORM\PrePersist()
+     * @return $this
+     **/
+    public function setCreationDateOnPrePersist(): self
+    {
+        $this->creationDate = new DateTime;
+
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist()
+     * @ORM\PreUpdate()
+     * @return $this
+     **/
+    public function setUpdateDateOnUpdate(): self
+    {
+        $this->updateDate = new DateTime;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getCreationDate(): ?DateTimeInterface
+    {
+        return $this->creationDate;
+    }
+
+    /**
+     * @param DateTimeInterface|null $creationDate
+     * @return $this
+     */
+    public function setCreationDate(?DateTimeInterface $creationDate): self
+    {
+        $this->creationDate = $creationDate;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getUpdateDate(): ?DateTimeInterface
+    {
+        return $this->updateDate;
+    }
+
+    /**
+     * @param DateTimeInterface|null $updateDate
+     * @return $this
+     */
+    public function setUpdateDate(?DateTimeInterface $updateDate): self
+    {
+        $this->updateDate = $updateDate;
+
+        return $this;
+    }
 
     /**
      * @param UserGroup $userGroup

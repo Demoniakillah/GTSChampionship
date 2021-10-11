@@ -33,7 +33,7 @@ class ApiRaceController extends AbstractController
                         $request->request->get('inscription')
                     );
                     foreach ($race->getCars() as $car) {
-                        $output['list'][$car->getMaker()->getName()][$car->getName()] = $car->getId();
+                        $output['list'][$car->getMaker()->getName()][$car->getName() . ' - ' . $car->getCategory()] = $car->getId();
                         if (($inscription instanceof DriverRace) && $inscription->getCar() instanceof Car && $inscription->getCar()->getId() === $car->getId()) {
                             $output['selected'] = $car->getId();
                         }

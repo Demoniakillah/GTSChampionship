@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\TrafficRepository;
+use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -16,47 +17,118 @@ class Traffic
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id = null;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $uri;
+    private ?string $uri = null;
 
     /**
      * @ORM\Column(type="datetime")
      */
-    private $date;
+    private ?DateTimeInterface $date = null;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $requestBody;
+    private ?string $requestBody = null;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $requestHeaders;
+    private ?string $requestHeaders = null;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $method;
+    private ?string $method = null;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $responseBody;
+    private ?string $responseBody = null;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      */
-    private $responseHeaders;
+    private ?string $responseHeaders = '';
 
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $responseStatusCode;
+    private ?int $responseStatusCode = null;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private ?DateTimeInterface $creationDate = null;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private ?DateTimeInterface $updateDate = null;
+
+    /**
+     * @ORM\PrePersist()
+     * @return $this
+     **/
+    public function setCreationDateOnPrePersist(): self
+    {
+        $this->creationDate = new DateTime;
+
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist()
+     * @ORM\PreUpdate()
+     * @return $this
+     **/
+    public function setUpdateDateOnUpdate(): self
+    {
+        $this->updateDate = new DateTime;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getCreationDate(): ?DateTimeInterface
+    {
+        return $this->creationDate;
+    }
+
+    /**
+     * @param DateTimeInterface|null $creationDate
+     * @return $this
+     */
+    public function setCreationDate(?DateTimeInterface $creationDate): self
+    {
+        $this->creationDate = $creationDate;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getUpdateDate(): ?DateTimeInterface
+    {
+        return $this->updateDate;
+    }
+
+    /**
+     * @param DateTimeInterface|null $updateDate
+     * @return $this
+     */
+    public function setUpdateDate(?DateTimeInterface $updateDate): self
+    {
+        $this->updateDate = $updateDate;
+
+        return $this;
+    }
 
     /**
      * @return int|null
