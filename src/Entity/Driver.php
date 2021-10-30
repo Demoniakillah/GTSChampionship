@@ -39,6 +39,11 @@ class Driver
     private ?string $name = '';
 
     /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private ?int $number = 0;
+
+    /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Team", inversedBy="drivers")
      * @ORM\JoinColumn(name="team", referencedColumnName="id", onDelete="SET NULL")
      */
@@ -279,6 +284,24 @@ class Driver
     {
         $this->team = $team;
 
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getNumber(): ?int
+    {
+        return $this->number;
+    }
+
+    /**
+     * @param int|null $number
+     * @return Driver
+     */
+    public function setNumber(?int $number): Driver
+    {
+        $this->number = $number;
         return $this;
     }
 }

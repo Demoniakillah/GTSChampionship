@@ -32,7 +32,7 @@ class RaceResultType extends AbstractType
                 'attr' => ['class' => 'hide'],
                 'data' => $options['pool_id']
             ])
-            ->add('totalTime')
+            ->add('raceTime')
             ->add('bestLap')
             ->add(
                 'finishStatus',
@@ -48,8 +48,10 @@ class RaceResultType extends AbstractType
             ->add('car', null, [
                 'attr' => ['class' => 'car_select']
             ])
-            ->add('bonus', null, ['empty_data' => 0, 'attr' => ['min' => 0]])
-            ->add('penalty', null, ['empty_data' => 0, 'attr' => ['min' => 0]]);
+            ->add('bonus', null, ['empty_data' => '00:00.000', 'attr' => ['class' => 'text-success']])
+            ->add('penalty', null, ['empty_data' => '00:00.000', 'attr' => ['class' => 'text-danger']])
+            ->add('totalTime', null, ['empty_data' => '00:00.000', 'attr' => ['class' => 'text-primary']])
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver)

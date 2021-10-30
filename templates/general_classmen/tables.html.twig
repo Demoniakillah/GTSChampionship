@@ -1,31 +1,26 @@
-{% set generalRanking = generalRanking(id) %}
+{% set rankingData = generalRanking(id) %}
 <h2>General</h2>
 <table class="table table-striped">
     <tbody>
     <tr>
-        <th>Winner</th>
-        <td>{{ generalRanking.best_driver }} <span
-                    class="text-success">{% if generalRanking.best_driver is not empty  %}({{ generalRanking.driver_progressions[generalRanking.best_driver]*100~'%' }}){% endif %}</span>
-        </td>
+        <th>Best Driver</th>
+        <td>{{ rankingData.bestDriver }}</td>
     </tr>
     <tr>
         <th>Best Team</th>
-        <td>{{ generalRanking.best_team }}</td>
+        <td>{{ rankingData.bestTeam }}</td>
     </tr>
     <tr>
         <th>Best Maker</th>
-        <td>{{ generalRanking.best_maker }}</td>
+        <td>{{ rankingData.bestMaker }}</td>
     </tr>
     <tr>
-        <th>Medail of Honor - Driver</th>
-        <td>{{ generalRanking.best_driver_progression }} <span
-                    class="text-success">{% if generalRanking.best_driver_progression is not empty  %}({{ (generalRanking.driver_progressions[generalRanking.best_driver_progression]*100)| round(2,'floor') ~'%' }}){% endif %}</span>
-        </td>
+        <th>Best Driver Progression</th>
+        <td>{{ rankingData.bestDriverProgression }}</td>
     </tr>
     <tr>
-        <th>Medail of Honor - Team</th>
-        <td>{{ generalRanking.best_team_progression }} <span
-                    class="text-success">{% if generalRanking.best_team_progression is not empty  %}({{ (generalRanking.team_progressions[generalRanking.best_team_progression]*100)| round(2,'floor') ~'%' }}){% endif %}</span>
+        <th>Best Team Progression</th>
+        <td>{{ rankingData.bestTeamProgression }} </td>
     </tr>
     </tbody>
 </table>
@@ -35,28 +30,21 @@
     <tr>
         <th>Rank</th>
         <th>Driver</th>
+        <th>Number</th>
         <th>Team</th>
-        <th>Pools</th>
-        <th>Progression</th>
-        <th>Points</th>
+        <th>Pool</th>
+        <th>Time</th>
     </tr>
     </thead>
     <tbody>
-    {% for driver, data in generalRanking.ranking %}
+    {% for driver in rankingData.generalRanking %}
         <tr>
             <td>{{ loop.index }}</td>
-            <td>{{ driver }}</td>
-            <td>{{ generalRanking.team_driver[driver] }}</td>
-            <td>
-                {% for pool in data.pool_evolution %}
-                    {% if loop.index > 1 %}
-                        ->
-                    {% endif %}
-                    {{ pool }}
-                {% endfor %}
-            </td>
-            <td>{{ (generalRanking.driver_progressions[driver]*100) | round(2,'floor') ~'%'}}</td>
-            <td>{{ data.points}}</td>
+            <td>{{ driver.driver }}</td>
+            <td>{% if driver.driver.number matches '/^\\d+$/' %}#{{ driver.driver.number }}{% endif %}</td>
+            <td>{{ driver.driver.team }}</td>
+            <td>{{ driver.driver.pool }}</td>
+            <td>{{ driver.totalTime }}</td>
         </tr>
     {% endfor %}
     </tbody>
@@ -67,15 +55,15 @@
     <tr>
         <th>Rank</th>
         <th>Team</th>
-        <th>Points</th>
+        <th>Time</th>
     </tr>
     </thead>
     <tbody>
-    {% for team, data in generalRanking.teams %}
+    {% for team, data in rankingData.teamRanking %}
         <tr>
             <td>{{ loop.index }}</td>
             <td>{{ team }}</td>
-            <td>{{ data.points }}</td>
+            <td>{{ data.totalTimeFactorized }}</td>
         </tr>
     {% endfor %}
     </tbody>
@@ -86,15 +74,13 @@
     <tr>
         <th>Rank</th>
         <th>Maker</th>
-        <th>Points</th>
     </tr>
     </thead>
     <tbody>
-    {% for maker, points in generalRanking.maker_points %}
+    {% for maker, points in rankingData.makerRanking %}
         <tr>
             <td>{{ loop.index }}</td>
             <td>{{ maker }}</td>
-            <td>{{ points }}</td>
         </tr>
     {% endfor %}
     </tbody>

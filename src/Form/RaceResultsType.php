@@ -46,7 +46,8 @@ class RaceResultsType extends AbstractType
             CollectionType::class,
             [
                 'entry_type' => RaceResultType::class,
-                'entry_options' => ['pool_id'=>$poolId]
+                'entry_options' => ['pool_id'=>$poolId],
+                'data' => $collection->toArray()
             ]
         );
     }

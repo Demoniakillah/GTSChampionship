@@ -43,7 +43,7 @@ class RaceInscriptionController extends AbstractController
         $maxByPool = (int)$poolConfigurationRepository->findOneBy(['name'=>'max_drivers'])->getValue();
         $nbPlacesTotal = $maxByPool * $nbPools;
         foreach ($race->getDriverRaces() as $driverRace){
-            if($driverRace->hasBennValidated()){
+            if($driverRace->hasBeenValidated()){
                 $nbPlacesTotal--;
             }
         }
@@ -77,7 +77,7 @@ class RaceInscriptionController extends AbstractController
     public function confirmEmail(string $token, DriverRaceRepository $driverRaceRepository):Response
     {
         $driverRace = $driverRaceRepository->findOneBy(['validationToken'=>$token]);
-        if($driverRace instanceof DriverRace && !$driverRace->hasBennValidated() && !$driverRace->getRace()->isPassed()){
+        if($driverRace instanceof DriverRace && !$driverRace->hasBeenValidated() && !$driverRace->getRace()->isPassed()){
             $driverRace->validateInscription();
             $this->getDoctrine()->getmanager()->flush();
             return $this->render('race_inscription/confirm_success.html.twig',['race'=>$driverRace->getRace(), 'user'=>$driverRace->getDriver()]);

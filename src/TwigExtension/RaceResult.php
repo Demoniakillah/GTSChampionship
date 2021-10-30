@@ -3,13 +3,17 @@
 
 namespace App\TwigExtension;
 
-
+use App\Entity\Car;
 use App\Entity\Driver;
 use App\Entity\DriverRace;
+use App\Entity\Maker;
 use App\Entity\Pool;
+use App\Entity\Race;
 use App\Entity\Team;
+use App\Repository\DriverRepository;
 use App\Repository\RaceRepository;
-use Doctrine\Common\Collections\ArrayCollection;
+use App\Tool;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\PersistentCollection;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
@@ -24,10 +28,31 @@ use Twig\TwigFunction;
  */
 class RaceResult extends AbstractExtension
 {
-    /**
-     * @var RaceRepository
-     */
     protected RaceRepository $raceRepository;
+
+    protected DriverRepository $driverRepository;
+
+    protected EntityManagerInterface $em;
+
+    /**
+     * @param EntityManagerInterface $em
+     * @return RaceResult
+     */
+    public function setEm(EntityManagerInterface $em): RaceResult
+    {
+        $this->em = $em;
+        return $this;
+    }
+
+    /**
+     * @param DriverRepository $driverRepository
+     * @return RaceResult
+     */
+    public function setDriverRepository(DriverRepository $driverRepository): RaceResult
+    {
+        $this->driverRepository = $driverRepository;
+        return $this;
+    }
 
     public function getFilters(): array
     {
@@ -90,14 +115,15 @@ class RaceResult extends AbstractExtension
      */
     public function getGeneralRanking(int $userGroupId): array
     {
-        $output = [];
-        $output['ranking'] = [];
-        $output['driver_race_positions'] = [];
-        $output['driver_progressions'] = [];
-        $output['teams'] = [];
-        $output['team_progressions'] = [];
-        $output['maker_points'] = [];
-        $output['best_driver'] = null;
+        $output = [
+            'generalRanking' => [],
+            'makerRanking' => [],
+            'teamRanking' => [],
+            'teamsProgression' => [],
+            'driversProgression' => []
+        ];
+
+        /** @var Race[] $races */
         $races = $this->raceRepository->createQueryBuilder('race')
             ->where('race.date < :now')
             ->andWhere('race.userGroup = :userGroupId')
@@ -106,109 +132,122 @@ class RaceResult extends AbstractExtension
             ->orderBy('race.date', 'asc')
             ->getQuery()
             ->getResult();
-
-        $racesResults = [];
-        foreach ($races as $i => $race) {
-            $racesResults[] = [
-                'race' => $race,
-                'results' => $this->getRaceResults($race->getDriverRaces())
-            ];
-
+        if (empty($races)) {
+            return $output;
         }
-        foreach ($racesResults as $raceData) {
-            foreach ($raceData['results'] as $pool => $driverResults) {
-                foreach ($driverResults as $finishPosition => $driverResult) {
-                    if ($driverResult instanceof DriverRace) {
-                        $psn = $driverResult->getDriver()->getPsn();
-                        $finalPosition = $driverResult->getFinalPosition();
-                        $delta = $finalPosition - $driverResult->getStartPosition();
-                        $output['driver_race_positions'][$psn][$driverResult->getRace()->getName()] = [
-                            'start' => $driverResult->getStartPosition(),
-                            'finish' => $finalPosition,
-                            'delta' => $delta
-                        ];
-                        $points = $driverResult->getPoints();
-                        $team = $driverResult->getDriver()->getTeam();
-                        $poolFactor = max($driverResult->getPool()->getPoints());
-                        if ($team instanceof Team) {
-                            $output['team_driver'][$psn] = $team->getName();
-                            $output['teams'][$team->getName()]['delta'][] = $delta;
-                            if (isset($output['teams'][$team->getName()]['nb_race'])) {
-                                $output['teams'][$team->getName()]['nb_race'] += 1;
-                            } else {
-                                $output['teams'][$team->getName()]['nb_race'] = 1;
-                            }
-                            if (isset($output['teams'][$team->getName()]['points'])) {
-                                $output['teams'][$team->getName()]['points'] += $points * $poolFactor;
-                            } else {
-                                $output['teams'][$team->getName()]['points'] = $points * $poolFactor;
-                            }
-                        }
-                        if (isset($output['nb_race'][$psn])) {
-                            $output['nb_race'][$psn] += 1;
-                        } else {
-                            $output['nb_race'][$psn] = 1;
-                        }
-                        $output['driver_race_points'][$psn][] = $points;
-                        if (isset($output['ranking'][$psn]['points'])) {
-                            $output['ranking'][$psn]['points'] += $points;
-                        } else {
-                            $output['ranking'][$psn]['points'] = $points;
-                        }
-                        $maker = $driverResult->getCar()->getMaker()->getName();
-                        if (isset($output['maker_points'][$maker])) {
-                            $output['maker_points'][$maker] += $points;
-                        } else {
-                            $output['maker_points'][$maker] = $points;
-                        }
-                        $pool = $driverResult->getPool()->getName();
-                        $output['ranking'][$psn]['current_pool'] = $pool;
-                        if(isset($output['ranking'][$psn]['pool_evolution'])){
 
-                        $prevIndex = count($output['ranking'][$psn]['pool_evolution']) - 1;
+        foreach ($races as $race) {
+            foreach ($race->getDriverRaces() as $driverRace) {
+                if ($driverRace->getDriver() instanceof Driver) {
+                    if (isset($output['driversProgression'][$driverRace->getDriver()->getPsn()])) {
+                        $output['driversProgression'][$driverRace->getDriver()->getPsn()] += $driverRace->getStartPosition() - $driverRace->getFinishPosition();
+                    } else {
+                        $output['driversProgression'][$driverRace->getDriver()->getPsn()] = $driverRace->getStartPosition() - $driverRace->getFinishPosition();
+                    }
+
+                    $driverId = $driverRace->getDriver()->getId();
+                    if (isset($output['generalRanking'][$driverId])) {
+                        $output['generalRanking'][$driverId] += $driverRace->getTotalTimeMilli();
+                    } else {
+                        $output['generalRanking'][$driverId] = $driverRace->getTotalTimeMilli();
+                    }
+                    if ($driverRace->getDriver()->getTeam() instanceof Team) {
+                        $team = $driverRace->getDriver()->getTeam()->getName();
+                        if (isset($output['teamsProgression'][$team])) {
+                            $output['teamsProgression'][$team] += $driverRace->getStartPosition() - $driverRace->getFinishPosition();
                         } else {
-                            $prevIndex = 0;
+                            $output['teamsProgression'][$team] = $driverRace->getStartPosition() - $driverRace->getFinishPosition();
                         }
-                        if(isset($output['ranking'][$psn]['pool_evolution'][$prevIndex]) && $output['ranking'][$psn]['pool_evolution'][$prevIndex] === $pool){
-                            //var_dump($output['ranking'][$psn]['pool_evolution']);
+                        $output['teamRanking'][$team]['count'] = isset($output['teamRanking'][$team]['count']) ? $output['teamRanking'][$team]['count'] + 1 : 1;
+                        if (isset($output['teamRanking'][$team]['totalTimeRaw'])) {
+                            $output['teamRanking'][$team]['totalTimeRaw'] += $driverRace->getTotalTimeMilli();
                         } else {
-                            $output['ranking'][$psn]['pool_evolution'][] = $pool;
+                            $output['teamRanking'][$team]['totalTimeRaw'] = $driverRace->getTotalTimeMilli();
                         }
-                        $output['ranking'][$psn]['pool_priority_evolution'][] = $poolFactor;
+                    }
+                    if ($driverRace->getCar() instanceof Car && $driverRace->getCar()->getMaker() instanceof Maker) {
+                        $maker = $driverRace->getCar()->getMaker()->getName();
+                        $output['makerRanking'][$maker]['count'] = isset($output['makerRanking'][$maker]['count']) ? $output['makerRanking'][$maker]['count'] + 1 : 1;
+                        if (isset($output['makerRanking'][$maker]['totalTimeRaw'])) {
+                            $output['makerRanking'][$maker]['totalTimeRaw'] += $driverRace->getTotalTimeMilli();
+                        } else {
+                            $output['makerRanking'][$maker]['totalTimeRaw'] = $driverRace->getTotalTimeMilli();
+                        }
                     }
                 }
             }
         }
 
-        if(isset($output['ranking']) && array_key_exists(0,$output['ranking'])){
-            $output['best_driver'] = array_keys($output['ranking'])[0];
+
+        $drivers = $this->driverRepository->findBy(['userGroup' => $userGroupId, 'id' => array_keys($output['generalRanking'])]);
+        foreach ($drivers as $index => $driver) {
+            $drivers[$driver->getId()] = $driver;
+            unset($drivers[$index]);
         }
-        foreach ($output['driver_race_positions'] as $psn => $data) {
-            $deltaTotal = 0;
-            foreach ($data as $datum) {
-                $deltaTotal += $datum['delta'];
-            }
-            $output['driver_progressions'][$psn] = $deltaTotal * $output['nb_race'][$psn] / array_sum($output['ranking'][$psn]['pool_priority_evolution']);
-            if(isset($output['team_driver'][$psn])) {
-                if (isset($output['team_progressions'][$output['team_driver'][$psn]])) {
-                    $output['team_progressions'][$output['team_driver'][$psn]] = $output['driver_progressions'][$psn];
-                } else {
-                    $output['team_progressions'][$output['team_driver'][$psn]] = $output['driver_progressions'][$psn];
-                }
+
+        foreach ($races[count($races) - 1]->getDriverRaces() as $driverRace) {
+            $drivers[$driverRace->getDriver()->getId()]->setPool($driverRace->getPool());
+        }
+        $this->em->flush();
+
+        foreach ($output['generalRanking'] as $driverId => $totalTime) {
+            $output['generalRanking'][$driverId] = [
+                'totalTime' => Tool::milliToTime($totalTime),
+                'driver' => $drivers[$driverId]
+            ];
+        }
+
+        $maxDrivers = 0;
+        foreach ($output['teamRanking'] as $team => $data) {
+            if ($maxDrivers < $data['count']) {
+                $maxDrivers = $data['count'];
             }
         }
-        $output['best_driver_rate'] = (is_array($output['driver_progressions']) && !empty($output['driver_progressions']))??max($output['driver_progressions']);
-        $output['best_team'] = array_key_exists(0, $output['teams'])?array_keys($output['teams'])[0]:null;
-        $output['best_team_progression'] = (is_array($output['team_progressions']) && !empty($output['team_progressions']))??array_search(max($output['team_progressions']), $output['team_progressions'], true);
-        $output['best_driver_progression'] = (is_array($output['driver_progressions']) && !empty($output['driver_progressions']))??array_search(max($output['driver_progressions']), $output['driver_progressions'], true);
-        uasort($output['ranking'], static function ($a, $b) {
-            return $a['points'] < $b['points'];
+
+        foreach ($output['teamRanking'] as $team => $data) {
+            $output['teamRanking'][$team]['factor'] = $maxDrivers / $data['count'];
+            $output['teamRanking'][$team]['totalTimeFactorizedMilli'] = $output['teamRanking'][$team]['totalTimeRaw'] * $output['teamRanking'][$team]['factor'];
+            $output['teamRanking'][$team]['totalTimeFactorized'] = Tool::milliToTime($output['teamRanking'][$team]['totalTimeFactorizedMilli']);
+        }
+
+        foreach ($output['makerRanking'] as $maker => $data) {
+            $output['makerRanking'][$maker]['factor'] = $maxDrivers / $data['count'];
+            $output['makerRanking'][$maker]['totalTimeFactorizedMilli'] = $output['makerRanking'][$maker]['totalTimeRaw'] * $output['makerRanking'][$maker]['factor'];
+            $output['makerRanking'][$maker]['totalTimeFactorized'] = Tool::milliToTime($output['makerRanking'][$maker]['totalTimeFactorizedMilli']);
+        }
+
+        asort($output['generalRanking']);
+        uasort($output['driversProgression'], static function ($a, $b) {
+            return $a < $b;
         });
-        uasort($output['teams'], static function ($a, $b) {
-            return $a['points'] < $b['points'];
+        uasort($output['teamsProgression'], static function ($a, $b) {
+            return $a < $b;
         });
-        asort($output['team_progressions'], SORT_DESC);
-        $output['best_maker'] = (is_array($output['maker_points']) && !empty($output['maker_points']))??array_search(max($output['maker_points']), $output['maker_points'], true);
+        uasort($output['teamRanking'], static function ($a, $b) {
+            return $a['totalTimeFactorizedMilli'] > $b['totalTimeFactorizedMilli'];
+        });
+        uasort($output['makerRanking'], static function ($a, $b) {
+            return $a['totalTimeFactorizedMilli'] > $b['totalTimeFactorizedMilli'];
+        });
+
+        $output['bestMaker'] = array_key_first($output['makerRanking']);
+        $output['bestTeam'] = array_key_first($output['teamRanking']);
+        $bestDriver = $output['generalRanking'][array_key_first($output['generalRanking'])]['driver'];
+        $bestProgressionDriver = $this->driverRepository->findOneBy(['psn'=>array_key_first($output['driversProgression']), 'userGroup'=>$userGroupId]);
+        if($bestProgressionDriver instanceof Driver){
+            $output['bestDriverProgression'] = $bestProgressionDriver->getPsn();
+            if(is_int($bestProgressionDriver->getNumber())){
+                $output['bestDriverProgression'] .= ' #' . $bestProgressionDriver->getNumber();
+            }
+            if($bestProgressionDriver->getTeam() instanceof Team){
+                $output['bestDriverProgression'] .= ' - ' . $bestProgressionDriver->getTeam()->getName();
+            }
+        }
+        $output['bestTeamProgression'] = array_key_first($output['teamsProgression']);
+        $output['bestDriver'] = $bestDriver->getPsn();
+        $output['bestDriver'] .= (is_int($bestDriver->getNumber())) ? ' #' . $bestDriver->getNumber() : '';
+        $output['bestDriver'] .= ($bestDriver->getTeam() instanceof Team) ? ' - ' . $bestDriver->getTeam()->getName() : '';
+
         return $output;
     }
 
@@ -228,7 +267,7 @@ class RaceResult extends AbstractExtension
         $podiumByPool = [];
         $driverRacesByPool = [];
         foreach ($driverRaces as $i => $driverRace) {
-            if ($driverRace->hasBennValidated() && ($driverRace->isValid() || $driverRace->isValidButDisconnected() || $driverRace->isValidButMissing())) {
+            if ($driverRace->isValid()) {
                 $driverRacesByPool[$driverRace->getPool()->getName()][$i] = $driverRace;
             }
         }
@@ -240,9 +279,10 @@ class RaceResult extends AbstractExtension
                 uasort(
                     $tmp,
                     static function (DriverRace $a, DriverRace $b) {
-                        return $a->getPoints() < $b->getPoints();
+                        return Tool::timeToMilli($a->getTotalTime()) > Tool::timeToMilli($b->getTotalTime());
                     }
                 );
+
                 $tmp = array_values($tmp);
                 $output = [];
                 foreach ($tmp as $index => $driverRace) {
@@ -275,12 +315,12 @@ class RaceResult extends AbstractExtension
             $driverRaces = $driverRaces->toArray();
         }
         $driverRaces = array_filter($driverRaces, static function (DriverRace $a) {
-            return $a->getBestLap() !== '00:00:000' && $a->hasBeenValidated();
+            return $a->getBestLap() !== '00:00.000' && $a->hasBeenValidated();
         });
         usort($driverRaces, static function (DriverRace $a, DriverRace $b) {
             return (int)str_replace(':', '', $a->getBestLap()) > (int)str_replace(':', '', $b->getBestLap());
         });
-        return $driverRaces[0]??null;
+        return $driverRaces[0] ?? null;
     }
 
     /**
@@ -291,5 +331,21 @@ class RaceResult extends AbstractExtension
     {
         $this->raceRepository = $raceRepository;
         return $this;
+    }
+
+    /**
+     * @param DriverRace[] $driverRaces
+     * @return int
+     */
+    protected function getMaxTime($driverRaces): int
+    {
+        $maxTime = 0;
+        foreach ($driverRaces as $driverRace) {
+            $timeToMilli = $driverRace->getRaceTimeMilli();
+            if ($timeToMilli > $maxTime) {
+                $maxTime = $timeToMilli;
+            }
+        }
+        return $maxTime;
     }
 }

@@ -112,7 +112,7 @@
                     <td>{{ driver.finishStatus == 0 ? driver.finishPosition+1 : '-' }}</td>
                     <td>{{ driver.driver.team }}</td>
                     <td>{{ driver.car }}</td>
-                    <td>{{ driver.bestLap != '00:00:000' ? driver.bestLap }}</td>
+                    <td>{{ driver.bestLap != '00:00.000' ? driver.bestLap }}</td>
                     <td>{{ driver.finishStatus == 0 ? driver.pool.points[driver.finishPosition] : driver.pool.points[driver.pool.points|length-1] }}</td>
                     <td>{{ driver.bonus }}</td>
                     <td>{{ driver.penalty }}</td>

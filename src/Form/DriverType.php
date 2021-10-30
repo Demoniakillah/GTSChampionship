@@ -13,9 +13,9 @@ class DriverType extends AbstractType
     {
         $builder
             ->add('psn')
+            ->add('number')
             ->add('name')
             ->add('team')
-       //     ->add('pool')
         ;
     }
 

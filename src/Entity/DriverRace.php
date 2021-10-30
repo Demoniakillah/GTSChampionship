@@ -6,6 +6,7 @@ use App\Repository\DriverRaceRepository;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
+use App\Tool;
 
 /**
  * @ORM\Entity(repositoryClass=DriverRaceRepository::class)
@@ -19,22 +20,27 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class DriverRace
 {
+
     /**
      *
      */
     public const FINISHED = 0;
+
     /**
      *
      */
     public const DISCONNECTED = 1;
+
     /**
      *
      */
     public const MISSING = 2;
+
     /**
      *
      */
     public const PENDING = 0;
+
     /**
      *
      */
@@ -50,12 +56,32 @@ class DriverRace
     /**
      * @ORM\Column(type="string", length=10, nullable=true)
      */
-    private ?string $totalTime = '00:00:000';
+    private ?string $raceTime = '00:00.000';
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private ?int $raceTimeMilli = 0;
 
     /**
      * @ORM\Column(type="string", length=10, nullable=true)
      */
-    private ?string $bestLap = '00:00:000';
+    private ?string $totalTime = '00:00.000';
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private ?int $totalTimeMilli = 0;
+
+    /**
+     * @ORM\Column(type="string", length=10, nullable=true)
+     */
+    private ?string $bestLap = '00:00.000';
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private ?int $bestLapMilli = 0;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
@@ -73,14 +99,24 @@ class DriverRace
     private ?int $finishStatus = self::FINISHED;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(type="string", length=10, nullable=true)
      */
-    private ?int $bonus = 0;
+    private ?string $bonus = '00:00.000';
 
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    private ?int $penalty = 0;
+    private ?int $bonusMilli = 0;
+
+    /**
+     * @ORM\Column(type="string", length=10,nullable=true)
+     */
+    private ?string $penalty = '00:00.000';
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private ?int $penaltyMilli = 0;
 
     /**
      * @var Pool|null
@@ -133,7 +169,7 @@ class DriverRace
     /**
      * @ORM\PrePersist()
      * @return $this
-     **/
+     * */
     public function setCreationDateOnPrePersist(): self
     {
         $this->creationDate = new DateTime;
@@ -145,7 +181,7 @@ class DriverRace
      * @ORM\PrePersist()
      * @ORM\PreUpdate()
      * @return $this
-     **/
+     * */
     public function setUpdateDateOnUpdate(): self
     {
         $this->updateDate = new DateTime;
@@ -295,10 +331,10 @@ class DriverRace
      * @param string|null $totalTime
      * @return $this
      */
-    public function setTotalTime(?string $totalTime = '00:00:000'): self
+    protected function setTotalTime(?string $totalTime = '00:00.000'): self
     {
         $this->totalTime = $totalTime;
-
+        $this->totalTimeMilli = Tool::timeToMilli($totalTime);
         return $this;
     }
 
@@ -314,9 +350,10 @@ class DriverRace
      * @param string|null $bestLap
      * @return $this
      */
-    public function setBestLap(?string $bestLap = '00:00:000'): self
+    public function setBestLap(?string $bestLap = '00:00.000'): self
     {
         $this->bestLap = $bestLap;
+        $this->bestLapMilli = Tool::timeToMilli($bestLap);
 
         return $this;
     }
@@ -379,47 +416,49 @@ class DriverRace
     }
 
     /**
-     * @return int|null
+     * @return string|null
      */
-    public function getBonus(): ?int
+    public function getBonus(): ?string
     {
         return $this->bonus;
     }
 
     /**
-     * @param int|null $bonus
+     * @param string|null $bonus
      * @return $this
      */
-    public function setBonus(?int $bonus): self
+    public function setBonus(?string $bonus): self
     {
         $this->bonus = $bonus;
-
+        $this->bonusMilli = Tool::timeToMilli($bonus);
+        $this->updateTotalTime();
         return $this;
     }
 
     /**
-     * @return int|null
+     * @return string|null
      */
-    public function getPenalty(): ?int
+    public function getPenalty(): ?string
     {
         return $this->penalty;
     }
 
     /**
-     * @param int|null $penalty
+     * @param string|null $penalty
      * @return $this
      */
-    public function setPenalty(int $penalty): self
+    public function setPenalty(string $penalty): self
     {
         $this->penalty = $penalty;
-
+        $this->penaltyMilli = Tool::timeToMilli($penalty);
+        $this->updateTotalTime();
         return $this;
     }
 
     /**
      * @return bool
      */
-    public function hasBennValidated(): bool
+    public function hasBeenValidated(): bool
     {
         return $this->inscriptionStatus === self::VALIDATED;
     }
@@ -430,12 +469,9 @@ class DriverRace
     public function isValid(): bool
     {
         return
-            $this->isValidInscription()
-            &&
-            $this->finishStatus === self::FINISHED
-            &&
-            is_int($this->startPosition)
-            &&
+            $this->isValidInscription() &&
+            $this->finishStatus === self::FINISHED &&
+            is_int($this->startPosition) &&
             is_int($this->finishPosition);
     }
 
@@ -445,10 +481,8 @@ class DriverRace
     public function isValidInscription(): bool
     {
         return
-            $this->pool instanceof Pool
-            &&
-            $this->driver instanceof Driver
-            &&
+            $this->pool instanceof Pool &&
+            $this->driver instanceof Driver &&
             $this->car instanceof Car;
     }
 
@@ -458,8 +492,7 @@ class DriverRace
     public function isValidButMissing(): bool
     {
         return
-            $this->isValidInscription()
-            &&
+            $this->isValidInscription() &&
             $this->isMissing();
     }
 
@@ -469,10 +502,8 @@ class DriverRace
     public function isValidButDisconnected(): bool
     {
         return
-            $this->isValidInscription()
-            &&
-            $this->isDisconnected()
-            &&
+            $this->isValidInscription() &&
+            $this->isDisconnected() &&
             is_int($this->startPosition);
     }
 
@@ -504,32 +535,13 @@ class DriverRace
     }
 
     /**
-     * @return int
-     */
-    public function getFinalPosition(): int
-    {
-        $results = [];
-        foreach ($this->getRace()->getDriverRaces() as $driverRace) {
-            $results[] = ['psn' => $driverRace->getDriver()->getPsn(), 'points' => $driverRace->getPoints()];
-        }
-        usort($results, static function ($a, $b) {
-            return $a['points'] < $b['points'];
-        });
-        $psn = $this->getDriver()->getPsn();
-        $results = array_filter($results, static function ($a) use ($psn) {
-            return $a['psn'] === $psn;
-        });
-        return key($results);
-    }
-
-    /**
      * @ORM\PrePersist()
      */
     public function setStartPositionOnPersist(): void
     {
         $startPosition = 0;
         foreach ($this->race->getDriverRaces() as $driverRace) {
-            if ($this->pool instanceof Pool && $driverRace->hasBennValidated() && $driverRace->getPool() instanceof Pool && $driverRace->getPool()->getId() === $this->pool->getId()) {
+            if ($this->pool instanceof Pool && $driverRace->hasBeenValidated() && $driverRace->getPool() instanceof Pool && $driverRace->getPool()->getId() === $this->pool->getId()) {
                 $startPosition++;
             }
         }
@@ -582,6 +594,132 @@ class DriverRace
         $this->validationToken = $validationToken;
 
         return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRaceTime(): ?string
+    {
+        return $this->raceTime;
+    }
+
+    /**
+     * @param string|null $raceTime
+     * @return DriverRace
+     */
+    public function setRaceTime(?string $raceTime): DriverRace
+    {
+        $this->raceTime = $raceTime;
+        $this->raceTimeMilli = Tool::timeToMilli($raceTime);
+        $this->updateTotalTime();
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getRaceTimeMilli(): ?int
+    {
+        return $this->raceTimeMilli;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getTotalTimeMilli(): ?int
+    {
+        return $this->totalTimeMilli;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getBestLapMilli(): ?int
+    {
+        return $this->bestLapMilli;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getBonusMilli(): ?int
+    {
+        return $this->bonusMilli;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getPenaltyMilli(): ?int
+    {
+        return $this->penaltyMilli;
+    }
+
+    /**
+     * @param int|null $raceTimeMilli
+     * @return $this
+     */
+    public function setRaceTimeMilli(?int $raceTimeMilli): self
+    {
+        $this->raceTimeMilli = $raceTimeMilli;
+        $this->raceTime = Tool::milliToTime($raceTimeMilli);
+        $this->updateTotalTime();
+        return $this;
+    }
+
+    /**
+     * @param int|null $totalTimeMilli
+     * @return $this
+     */
+    protected function setTotalTimeMilli(?int $totalTimeMilli): self
+    {
+        $this->totalTimeMilli = $totalTimeMilli;
+        $this->totalTime = Tool::milliToTime($totalTimeMilli);
+        return $this;
+    }
+
+    /**
+     * @param int|null $bestLapMilli
+     * @return $this
+     */
+    public function setBestLapMilli(?int $bestLapMilli): self
+    {
+        $this->bestLapMilli = $bestLapMilli;
+        $this->bestLap = Tool::milliToTime($bestLapMilli);
+        return $this;
+    }
+
+    /**
+     * @param int|null $bonusMilli
+     * @return $this
+     */
+    public function setBonusMilli(?int $bonusMilli): self
+    {
+        $this->bonusMilli = $bonusMilli;
+        $this->bonus = Tool::milliToTime($bonusMilli);
+        $this->updateTotalTime();
+        return $this;
+    }
+
+    /**
+     * @param int|null $penaltyMilli
+     * @return $this
+     */
+    public function setPenaltyMilli(?int $penaltyMilli): self
+    {
+        $this->penaltyMilli = $penaltyMilli;
+        $this->penalty = Tool::milliToTime($penaltyMilli);
+        $this->updateTotalTime();
+        return $this;
+    }
+
+    /**
+     *
+     */
+    protected function updateTotalTime():void
+    {
+        $this->setTotalTimeMilli($this->raceTimeMilli+$this->penaltyMilli-$this->bonusMilli);
     }
 
 }

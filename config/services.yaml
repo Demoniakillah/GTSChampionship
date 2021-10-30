@@ -25,28 +25,33 @@ services:
     # as action arguments even if you don't extend any base controller class
     App\Controller\:
         resource: '../src/Controller/'
-        tags: ['controller.service_arguments']
+        tags: [ 'controller.service_arguments' ]
 
     App\TwigExtension\:
         resource: '../src/TwigExtension/'
-        tags: ['twig.extension']
+        tags: [ 'twig.extension' ]
 
     App\TwigExtension\RaceResult:
         calls:
-            - [setRaceRepository,['@App\Repository\RaceRepository']]
-        tags: ['twig.extension']
+            - [ setRaceRepository,[ '@App\Repository\RaceRepository' ] ]
+            - [ setDriverRepository,[ '@App\Repository\DriverRepository' ] ]
+            - [ setEm,[ '@Doctrine\ORM\EntityManagerInterface' ] ]
+        tags: [ 'twig.extension' ]
 
     App\ErrorListener:
         tags:
-            - {name: kernel.event_listener, event: kernel.exception}
+            - { name: kernel.event_listener, event: kernel.exception }
 
     App\TrafficListener:
         calls:
-            - [ setLogger,["@monolog.logger"] ]
-            - [ setEm,["@doctrine.orm.entity_manager"] ]
+            - [ setLogger,[ "@monolog.logger" ] ]
+            - [ setEm,[ "@doctrine.orm.entity_manager" ] ]
         tags:
-            - {name: kernel.event_listener, event: kernel.terminate}
+            - { name: kernel.event_listener, event: kernel.terminate }
 
-
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    App\EventListener\SortDriversListener:
+        calls:
+            - [setEm,["@doctrine.orm.entity_manager"]]
+            - [setSecurity,["@security.token_storage"]]
+        tags:
+            - { name: 'kernel.event_listener', event: 'kernel.response', method: 'sortDrivers' }

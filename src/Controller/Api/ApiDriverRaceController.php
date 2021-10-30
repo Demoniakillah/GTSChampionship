@@ -13,6 +13,7 @@ use App\Repository\DriverRaceRepository;
 use App\Repository\DriverRepository;
 use App\Repository\PoolRepository;
 use App\Repository\RaceRepository;
+use App\Tool;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -34,13 +35,13 @@ class ApiDriverRaceController extends AbstractController
      * @param CarRepository $carRepository
      * @return JsonResponse
      */
-    public function updateDriverRaceCar(Request  $request, DriverRaceRepository $driverRaceRepository, CarRepository $carRepository):JsonResponse
+    public function updateDriverRaceCar(Request $request, DriverRaceRepository $driverRaceRepository, CarRepository $carRepository): JsonResponse
     {
-        if($request->request->has('id') && $request->request->has('car') && $request->request->get('id') !== '' && $request->request->get('car') !== ''){
+        if ($request->request->has('id') && $request->request->has('car') && $request->request->get('id') !== '' && $request->request->get('car') !== '') {
             $inscription = $driverRaceRepository->find($request->request->get('id'));
-            if($inscription instanceof DriverRace){
+            if ($inscription instanceof DriverRace) {
                 $car = $carRepository->find($request->request->get('car'));
-                if($car instanceof Car){
+                if ($car instanceof Car) {
                     $inscription->setCar($car);
                     $this->getDoctrine()->getManager()->flush();
                     return $this->json(true);
@@ -56,18 +57,18 @@ class ApiDriverRaceController extends AbstractController
      * @param DriverRaceRepository $driverRaceRepository
      * @return JsonResponse
      */
-    public function randomStartGrill(Request  $request, DriverRaceRepository $driverRaceRepository):JsonResponse
+    public function randomStartGrill(Request $request, DriverRaceRepository $driverRaceRepository): JsonResponse
     {
         $poolId = $request->request->get('pool');
         $raceId = $request->request->get('race');
-        $inscriptions = $driverRaceRepository->findBy(['race'=>$raceId, 'pool'=>$poolId]);
+        $inscriptions = $driverRaceRepository->findBy(['race' => $raceId, 'pool' => $poolId]);
         $nb = count($inscriptions);
         $arrayPositions = [];
-        if($nb>2){
-            for ($position = 0; $position<$nb; $position++){
+        if ($nb > 2) {
+            for ($position = 0; $position < $nb; $position++) {
                 $arrayPositions[] = $position;
             }
-            foreach ($inscriptions as $inscription){
+            foreach ($inscriptions as $inscription) {
                 $startPosition = array_rand($arrayPositions);
                 $inscription->setStartPosition($startPosition);
                 unset($arrayPositions[$startPosition]);
@@ -86,7 +87,7 @@ class ApiDriverRaceController extends AbstractController
      */
     public function remove(Request $request, DriverRaceRepository $driverRaceRepository, EntityManagerInterface $em): Response
     {
-        if($request->request->get('id')) {
+        if ($request->request->get('id')) {
             $inscription = $driverRaceRepository->find($request->request->get('id'));
             if ($inscription instanceof DriverRace) {
                 $em->remove($inscription);
@@ -118,7 +119,7 @@ class ApiDriverRaceController extends AbstractController
     ): Response
     {
         $inscription = null;
-        if($request->request->get('id')) {
+        if ($request->request->get('id')) {
             $inscription = $driverRaceRepository->find($request->request->get('id'));
         }
         $race = $raceRepository->find($request->request->get('race'));
@@ -180,19 +181,33 @@ class ApiDriverRaceController extends AbstractController
 
     /**
      * @Route("/finish/positions", name="api_update_driver_race_finish_positions", methods={"POST"})
+     * @param Request $request
+     * @return JsonResponse
      */
     public function updateDriversFinishPosition(Request $request): JsonResponse
     {
-        foreach ($request->request->get('data') as $data) {
+        $race = null;
+        $pool = null;
+        $maxRaceTime = 0;
+        $requestData = $request->request->get('data');
+        $driverRaces = [];
+        foreach ($requestData as $data) {
             $driverRace = $this->getDoctrine()->getRepository(DriverRace::class)->find($data['id']);
-            if ($driverRace instanceof DriverRace) {
+            $driverRaces[$driverRace->getId()] = $driverRace;
+            if ($driverRace instanceof DriverRace && $driverRace->getDriver() instanceof Driver) {
+                if (!$race instanceof Race) {
+                    $race = $driverRace->getRace();
+                }
+                if (!$pool instanceof Pool) {
+                    $pool = $driverRace->getPool();
+                }
                 $driverRace
-                    ->setFinishPosition($data['data']['finishPosition'])
-                    ->setTotalTime($data['data']['totalTime'] === '' ? '00:00:000' : $data['data']['totalTime'])
-                    ->setBestLap($data['data']['bestLap'] === '' ? '00:00:000' : $data['data']['bestLap'])
+                    ->setFinishPosition((int)$data['data']['finishPosition'])
+                    ->setRaceTime($data['data']['raceTime'] === '' ? '00:00.000' : $data['data']['raceTime'])
+                    ->setBestLap($data['data']['bestLap'] === '' ? '00:00.000' : $data['data']['bestLap'])
                     ->setFinishStatus((int)$data['data']['finishStatus'])
-                    ->setBonus((int)$data['data']['bonus'])
-                    ->setPenalty((int)$data['data']['penalty']);
+                    ->setBonus($data['data']['bonus'] === '' ? '00:00.000' : $data['data']['bonus'])
+                    ->setPenalty($data['data']['penalty'] === '' ? '00:00.000' : $data['data']['penalty']);
                 $pool = $this->getDoctrine()->getRepository(Pool::class)->find($data['data']['pool']);
                 if ($pool instanceof Pool) {
                     $driverRace->setPool($pool);
@@ -202,8 +217,24 @@ class ApiDriverRaceController extends AbstractController
                 if ($car instanceof Car) {
                     $driverRace->setCar($car);
                 }
+                if ($maxRaceTime < $driverRace->getRaceTimeMilli()) {
+                    $maxRaceTime = $driverRace->getRaceTimeMilli();
+                }
             }
         }
+        $maxRaceTime += 1000;
+        foreach ($driverRaces as $id => $driverRace) {
+            if ($driverRace->getRaceTimeMilli() === 0) {
+                $driverRace->setRaceTimeMilli($maxRaceTime);
+            }
+        }
+        usort($driverRaces, static function (DriverRace $a, DriverRace $b) {
+            return $a->getTotalTimeMilli() > $b->getTotalTimeMilli();
+        });
+        foreach ($driverRaces as $index => $driverRace) {
+            $driverRace->setFinishPosition($index + 1);
+        }
+
         $this->getDoctrine()->getManager()->flush();
 
         return $this->json(true);
@@ -211,6 +242,8 @@ class ApiDriverRaceController extends AbstractController
 
     /**
      * @Route("/positions", name="api_update_driver_race_positions", methods={"POST"})
+     * @param Request $request
+     * @return JsonResponse
      */
     public function updateDriversPosition(Request $request): JsonResponse
     {
@@ -232,7 +265,7 @@ class ApiDriverRaceController extends AbstractController
                         $inscriptionEntity->setStartPosition((int)$inscription['position']);
                         if ($pool instanceof Pool) {
                             $inscriptionEntity->setPool($pool);
-                            if($inscriptionEntity->getDriver() instanceof Driver) {
+                            if ($inscriptionEntity->getDriver() instanceof Driver) {
                                 $inscriptionEntity->getDriver()->setPool($pool);
                             }
                         }

@@ -64,7 +64,6 @@ class DriverController extends MainController
      */
     public function new(Request $request): Response
     {
-        dd($request);
         return $this->updateAction(new Driver(), $request);
     }
 
