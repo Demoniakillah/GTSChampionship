@@ -16,31 +16,30 @@ use Symfony\Component\Routing\Annotation\Route;
 class S4CarSelectController extends AbstractController
 {
     /**
-     * @Route("/public/echo_gts/s4/car_select/{teamName}", methods={"GET"})
-     * @param string $teamName
+     * @Route("/public/echo_gts/s4/car_select/{teamNameHash}", methods={"GET"})
+     * @param string $teamNameHash
      * @param S4CarListRepository $s4CarListRepository
      * @param S4CarSelectRepository $s4CarSelectRepository
      * @return Response
      * @throws NonUniqueResultException
      */
-    public function index(string $teamName, S4CarListRepository $s4CarListRepository, S4CarSelectRepository $s4CarSelectRepository): Response
+    public function index(string $teamNameHash, S4CarListRepository $s4CarListRepository, S4CarSelectRepository $s4CarSelectRepository): Response
     {
-        $team = $s4CarSelectRepository->createQueryBuilder('ss')->where('ss.teamName = :teamName')->andWhere('ss.car is null')->setParameter('teamName', $teamName)->getQuery()->getOneOrNullResult();
+        $team = $s4CarSelectRepository->findOneBy(['hash' => $teamNameHash]);
         if (!$team instanceof S4CarSelect) {
-            $team = $s4CarSelectRepository->createQueryBuilder('ss')->where('ss.teamName = :teamName')->andWhere('ss.car is not null')->setParameter('teamName', $teamName)->getQuery()->getOneOrNullResult();
-            if ($team instanceof S4CarSelect) {
-                return $this->render('s4_car_select/already_selected.html.twig', ['team' => $team]);
-            }
             return $this->render('s4_car_select/error.html.twig', ['team' => $team]);
+        }
+        if (!is_null($team->getCar())) {
+            return $this->render('s4_car_select/already_selected.html.twig', ['team' => $team]);
         }
 
         $previousTeam = $s4CarSelectRepository->createQueryBuilder('ss')->where('ss.car is null')->andWhere('ss.teamPosition < :prevPosition')->setParameter('prevPosition', $team->getTeamPosition() - 1)->setMaxResults(1)->getQuery()->getOneOrNullResult();
 
         if ($previousTeam instanceof S4CarSelect) {
-            return $this->render('s4_car_select/try_later.html.twig',['previous'=>$previousTeam, 'team'=>$team]);
+            return $this->render('s4_car_select/try_later.html.twig', ['previous' => $previousTeam, 'team' => $team]);
         }
 
-        $team->setToken(md5(sha1(uniqid('',true))));
+        $team->setToken(md5(sha1(uniqid('', true))));
         $this->getDoctrine()->getManager()->flush();
         return $this->render('s4_car_select/index.html.twig', [
             'cars' => $s4CarListRepository->findBy([], ['name' => 'asc']),
@@ -55,18 +54,18 @@ class S4CarSelectController extends AbstractController
      * @return Response
      * @Route("/public/echo_gts/s4/car_select/submit"), methods={"POST"})
      */
-    public function insert(Request $request, S4CarSelectRepository $carSelectRepository, S4CarListRepository $s4CarListRepository):Response
+    public function insert(Request $request, S4CarSelectRepository $carSelectRepository, S4CarListRepository $s4CarListRepository): Response
     {
         $team = $carSelectRepository->find($request->request->get('team'));
         $car = $s4CarListRepository->find($request->request->get('car_selected'));
 
-        if(!$car instanceof S4CarList || !$team instanceof S4CarSelect || $request->request->get('token') !== $team->getToken()){
-            return $this->render('s4_car_select/error.html.twig',['team'=>$team]);
+        if (!$car instanceof S4CarList || !$team instanceof S4CarSelect || $request->request->get('token') !== $team->getToken()) {
+            return $this->render('s4_car_select/error.html.twig', ['team' => $team]);
         }
         $team->setCar($car->getName());
         $this->getDoctrine()->getManager()->remove($car);
         $this->getDoctrine()->getManager()->flush();
-        return $this->render('s4_car_select/thanks.html.twig',['team'=>$team]);
+        return $this->render('s4_car_select/thanks.html.twig', ['team' => $team]);
     }
 }
 
