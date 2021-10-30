@@ -1,0 +1,19 @@
+{% extends 's4_car_select/base.html.twig'%}
+
+{%  block body %}
+<body>
+<h3>
+    Choisis ta voiture parmis la liste ci-dessous:
+</h3>
+<form action="{{ path('app_s4carselect_insert') }}" method="POST">
+    <label for="car_selected"></label><select name="car_selected" id="car_selected">
+        {% for car in cars %}
+            <option value="{{ car.id }}">{{ car }}</option>
+        {% endfor %}
+    </select>
+    <input type="hidden" name="token" value="{{ team.token }}">
+    <input type="hidden" name="team" value="{{ team.id }}">
+    <input type="submit" name="validate" value="Valider">
+</form>
+
+{% endblock %}
