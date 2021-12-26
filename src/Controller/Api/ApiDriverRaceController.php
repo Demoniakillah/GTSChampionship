@@ -13,6 +13,7 @@ use App\Repository\DriverRaceRepository;
 use App\Repository\DriverRepository;
 use App\Repository\PoolRepository;
 use App\Repository\RaceRepository;
+use App\Tools;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -180,16 +181,19 @@ class ApiDriverRaceController extends AbstractController
 
     /**
      * @Route("/finish/positions", name="api_update_driver_race_finish_positions", methods={"POST"})
+     * @param Request $request
+     * @return JsonResponse
      */
     public function updateDriversFinishPosition(Request $request): JsonResponse
     {
+        $driverRaces = [];
         foreach ($request->request->get('data') as $data) {
             $driverRace = $this->getDoctrine()->getRepository(DriverRace::class)->find($data['id']);
             if ($driverRace instanceof DriverRace) {
                 $driverRace
                     ->setFinishPosition($data['data']['finishPosition'])
-                    ->setTotalTime($data['data']['totalTime'] === '' ? '00:00:000' : $data['data']['totalTime'])
-                    ->setBestLap($data['data']['bestLap'] === '' ? '00:00:000' : $data['data']['bestLap'])
+                    ->setTotalTime($data['data']['totalTime'] === '' ? '00:00:00.000' : $data['data']['totalTime'])
+                    ->setBestLap($data['data']['bestLap'] === '' ? '00:00:00.000' : $data['data']['bestLap'])
                     ->setFinishStatus((int)$data['data']['finishStatus'])
                     ->setBonus((int)$data['data']['bonus'])
                     ->setPenalty((int)$data['data']['penalty']);
@@ -203,6 +207,7 @@ class ApiDriverRaceController extends AbstractController
                     $driverRace->setCar($car);
                 }
             }
+            $driverRaces[] = $driverRace;
         }
         $this->getDoctrine()->getManager()->flush();
 
@@ -211,6 +216,8 @@ class ApiDriverRaceController extends AbstractController
 
     /**
      * @Route("/positions", name="api_update_driver_race_positions", methods={"POST"})
+     * @param Request $request
+     * @return JsonResponse
      */
     public function updateDriversPosition(Request $request): JsonResponse
     {

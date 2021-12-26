@@ -47,7 +47,7 @@ class RaceInscriptionController extends AbstractController
                 $nbPlacesTotal--;
             }
         }
-        return $this->json($nbPlacesTotal);
+        return $this->json($nbPlacesTotal+1);
     }
 
     /**

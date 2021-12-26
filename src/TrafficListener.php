@@ -28,24 +28,24 @@ class TrafficListener
      */
     public function onKernelTerminate(TerminateEvent $event): void
     {
-        if(preg_match('#(^/(_(profiler|wdt)|css|images|js)/)|((\.(js|css|jpg|jpeg|png|gif))$)#',$event->getRequest()->getPathInfo())){
-            return;
-        }
-        try {
-            $traffic = (new Traffic())
-                ->setDate(new \DateTime)
-                ->setUri($event->getRequest()->getPathInfo())
-                ->setMethod($event->getRequest()->getMethod())
-                ->setRequestBody($event->getRequest()->getContent())
-                ->setRequestHeaders(json_encode($event->getRequest()->headers->all()))
-                ->setResponseBody($event->getResponse()->getContent())
-                ->setResponseHeaders(json_encode($event->getResponse()->headers->all()))
-                ->setResponseStatusCode($event->getResponse()->getStatusCode());
-            $this->em->persist($traffic);
-            $this->em->flush();
-        } catch (\Exception $e) {
-            $this->logger->error($e->getMessage());
-        }
+//        if(preg_match('#(^/(_(profiler|wdt)|css|images|js)/)|((\.(js|css|jpg|jpeg|png|gif))$)#',$event->getRequest()->getPathInfo())){
+//            return;
+//        }
+//        try {
+//            $traffic = (new Traffic())
+//                ->setDate(new \DateTime)
+//                ->setUri($event->getRequest()->getPathInfo())
+//                ->setMethod($event->getRequest()->getMethod())
+//                ->setRequestBody($event->getRequest()->getContent())
+//                ->setRequestHeaders(json_encode($event->getRequest()->headers->all()))
+//                ->setResponseBody($event->getResponse()->getContent())
+//                ->setResponseHeaders(json_encode($event->getResponse()->headers->all()))
+//                ->setResponseStatusCode($event->getResponse()->getStatusCode());
+//            $this->em->persist($traffic);
+//            $this->em->flush();
+//        } catch (\Exception $e) {
+//            $this->logger->error($e->getMessage());
+//        }
     }
 
     /**

@@ -8,6 +8,8 @@
                 <div class="col"><strong>name:</strong> {{ driver.name }}</div>{% endif %}
             {% if driver.team is not null %}
                 <div class="col"><strong>team:</strong> {{ driver.team }}</div>{% endif %}
+            {% if driver.number is not null %}
+                <div class="col"><strong>#</strong> {{ driver.number }}</div>{% endif %}
             {% if driver.pool is not null %}
                 <div class="col"><strong>pool:</strong> {{ driver.pool }}</div>{% endif %}
             <div class="col">

@@ -19,6 +19,8 @@ class GeneralClassmenController extends AbstractController
 
     /**
      * @Route("/public/ranking/{id}", name="ranking")
+     * @param UserGroup $userGroup
+     * @return Response
      */
     public function indexPublic(UserGroup $userGroup): Response
     {

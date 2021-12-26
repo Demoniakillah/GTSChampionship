@@ -1,0 +1,88 @@
+<h1>Combo generator - Configuration</h1>
+<a class="open_generator btn btn-link text-primary">Start</a>
+<div class="row">
+    <div class="row">
+        <h2><label for="nbRaces">Nb races: </label><input id="nbRaces" type="number" value="1" step="1" class="col-1"
+                                                          min="1"></h2>
+    </div>
+    <div class="row">
+        <h2>Car Categories</h2>
+        <span class="btn btn-link col" id="category_select_all">select all</span>
+        <span class="btn btn-link col" id="category_unselect_all">unselect all</span>
+        <div class="row">
+            {% for category in categories %}
+                <div class="col" style="border: dotted 1px #005cbf">
+                    <input class="category_checkbox" id="category-{{ category.id }}" data-id="{{ category.id }}"
+                           type="checkbox" >
+                    <label for="category-{{ category.id }}">{{ category.name }}</label>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="row">
+        <h2>Tracks</h2>
+        <span class="btn btn-link col" id="track_select_all">select all</span>
+        <span class="btn btn-link col" id="track_unselect_all">unselect all</span>
+        {% for country in countries %}
+            <div class="col-12" style="border: dotted 1px #6610f2">
+                <h5>
+                    <label for="country-{{ country.id }}">{{ country.name }}</label>
+                    <input class="country_checkbox" id="country-{{ country.id }}" data-id="{{ country.id }}"
+                           type="checkbox">
+                </h5>
+                <div class="row">
+                    {% for track in country.tracks %}
+                        <div class="col" style="border: dotted 1px #005cbf">
+                            <input class="track_checkbox" id="track-{{ track.id }}" data-id="{{ track.id }}"
+                                   type="checkbox" data-country_id="{{ country.id }}" >
+                            <label for="track-{{ track.id }}">{{ track.name }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+<a class="open_generator btn btn-link text-primary">Start</a>
+
+<script type="text/javascript">
+    $(document).ready(() => {
+        $('.country_checkbox').on('change', () => {
+            console.log($('.country_checkbox').is(':checked'))
+            if($('.country_checkbox').is(':checked') === true){
+                console.log('checked')
+            } else {
+                console.log('uncheck')
+            }
+        })
+        $('#track_select_all').on('click', () => {
+            $('.track_checkbox').attr('checked', true)
+            $('.country_checkbox').attr('checked', true)
+        })
+        $('#track_unselect_all').on('click', () => {
+            $('.track_checkbox').attr('checked', null)
+            $('.country_checkbox').attr('checked', null)
+        })
+        $('#category_select_all').on('click', () => {
+            $('.category_checkbox').attr('checked', true)
+        })
+        $('#category_unselect_all').on('click', () => {
+            $('.category_checkbox').attr('checked', null)
+        })
+        $('.open_generator').on('click', () => {
+            let nbRaces = $('#nbRaces').val() >= 1 ? parseInt($('#nbRaces').val()) : 1
+            let data = {"categories": [], "tracks": [], 'nbRaces': nbRaces}
+            $.each($('.category_checkbox:checked'), (i, e) => {
+                data['categories'].push(parseInt($(e).attr('data-id')))
+            })
+            $.each($('.track_checkbox:checked'), (i, e) => {
+                data['tracks'].push(parseInt($(e).attr('data-id')))
+            })
+            let url = "{{ path('public_race_combo_lottery_b') }}/" + window.btoa(unescape(encodeURIComponent( JSON.stringify(data) )))
+            $.dialog({
+                title: 'Link',
+                content: '<a href="'+url+'">'+url+'</a>'
+            })
+        })
+    })
+</script>

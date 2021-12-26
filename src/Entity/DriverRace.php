@@ -48,14 +48,14 @@ class DriverRace
     private ?int $id = null;
 
     /**
-     * @ORM\Column(type="string", length=10, nullable=true)
+     * @ORM\Column(type="string", length=12, nullable=true)
      */
-    private ?string $totalTime = '00:00:000';
+    private ?string $totalTime = '00:00:00.000';
 
     /**
-     * @ORM\Column(type="string", length=10, nullable=true)
+     * @ORM\Column(type="string", length=12, nullable=true)
      */
-    private ?string $bestLap = '00:00:000';
+    private ?string $bestLap = '00:00:00.000';
 
     /**
      * @ORM\Column(type="integer", nullable=true)
@@ -73,14 +73,14 @@ class DriverRace
     private ?int $finishStatus = self::FINISHED;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(type="string", length=12, nullable=true)
      */
-    private ?int $bonus = 0;
+    private ?string $bonus = '00:00:00.000';
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(type="string", length=12, nullable=true)
      */
-    private ?int $penalty = 0;
+    private ?string $penalty = '00:00:00.000';
 
     /**
      * @var Pool|null
@@ -295,7 +295,7 @@ class DriverRace
      * @param string|null $totalTime
      * @return $this
      */
-    public function setTotalTime(?string $totalTime = '00:00:000'): self
+    public function setTotalTime(?string $totalTime = '00:00:00.000'): self
     {
         $this->totalTime = $totalTime;
 
@@ -314,7 +314,7 @@ class DriverRace
      * @param string|null $bestLap
      * @return $this
      */
-    public function setBestLap(?string $bestLap = '00:00:000'): self
+    public function setBestLap(?string $bestLap = '00:00:00.000'): self
     {
         $this->bestLap = $bestLap;
 
@@ -378,43 +378,6 @@ class DriverRace
         return $this;
     }
 
-    /**
-     * @return int|null
-     */
-    public function getBonus(): ?int
-    {
-        return $this->bonus;
-    }
-
-    /**
-     * @param int|null $bonus
-     * @return $this
-     */
-    public function setBonus(?int $bonus): self
-    {
-        $this->bonus = $bonus;
-
-        return $this;
-    }
-
-    /**
-     * @return int|null
-     */
-    public function getPenalty(): ?int
-    {
-        return $this->penalty;
-    }
-
-    /**
-     * @param int|null $penalty
-     * @return $this
-     */
-    public function setPenalty(int $penalty): self
-    {
-        $this->penalty = $penalty;
-
-        return $this;
-    }
 
     /**
      * @return bool
@@ -498,9 +461,45 @@ class DriverRace
     public function getPoints(): int
     {
         if ($this->isValid()) {
-            return $this->pool->getPoints()[$this->finishPosition] + $this->bonus - $this->penalty;
+            return 0;//$this->pool->getPoints()[$this->finishPosition] + $this->bonus - $this->penalty;
         }
-        return $this->pool->getPoints()[count($this->pool->getPoints()) - 1] + $this->bonus - $this->penalty;
+        return 0;//$this->pool->getPoints()[count($this->pool->getPoints()) - 1] + $this->bonus - $this->penalty;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getBonus(): ?string
+    {
+        return $this->bonus;
+    }
+
+    /**
+     * @param string|null $bonus
+     * @return DriverRace
+     */
+    public function setBonus(?string $bonus): DriverRace
+    {
+        $this->bonus = $bonus;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPenalty(): ?string
+    {
+        return $this->penalty;
+    }
+
+    /**
+     * @param string|null $penalty
+     * @return DriverRace
+     */
+    public function setPenalty(?string $penalty): DriverRace
+    {
+        $this->penalty = $penalty;
+        return $this;
     }
 
     /**

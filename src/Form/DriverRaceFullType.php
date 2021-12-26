@@ -17,8 +17,8 @@ class DriverRaceFullType extends DriverRaceType
         parent::buildForm($builder, $options);
         $builder
             ->add('pool')
-            ->add('totalTime', null, ['empty_data' => '00:00:000'])
-            ->add('bestLap', null, ['empty_data' => '00:00:000'])
+            ->add('totalTime', null, ['empty_data' => '00:00:00.000'])
+            ->add('bestLap', null, ['empty_data' => '00:00:00.000'])
             ->add('startPosition', null, ['empty_data' => 0])
             ->add('finishPosition', null, ['empty_data' => 0])
             ->add(

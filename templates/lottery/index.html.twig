@@ -1,0 +1,141 @@
+{% extends 'base_public.html.twig' %}
+
+{% block content %}
+    <div class="container-fluid">
+        <h2>Combo Lottery</h2>
+        {% for raceNumber in 1..nbRaces %}
+            <hr>
+            <div class="row" style="; padding: 10px">
+                <h3>Race n°{{ raceNumber }}</h3>
+                <div id="country-{{ raceNumber }}" style="border: 1px solid white;" class="col-3">-</div>
+                <div id="track-{{ raceNumber }}" style="border: 1px solid white;" class="col-3">-</div>
+                <div id="category-{{ raceNumber }}" style="border: 1px solid white;" class="col-3">-</div>
+                <div id="car-{{ raceNumber }}" style="border: 1px solid white;" class="col-3">-</div>
+            </div>
+        {% endfor %}
+        <div id="start" class="row btn btn-success" style="margin-top: 50px; margin-left: 10px">START</div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script type="text/javascript">
+        $(document).ready(() => {
+
+            let nbRaces = parseInt("{{ nbRaces }}")
+            const delay = 1
+            const refresh = 80
+
+            let countries = []
+            {% for country in countries %}
+            countries.push("{{ country.name }}")
+            {% endfor %}
+
+            let categories = []
+            {% for category in categories %}
+            categories.push("{{ category.name }}")
+            {% endfor %}
+
+            let tracksByCountry = {}
+            let tmp
+            {% for country in countries %}
+            tmp = []
+            {% for track in country.tracks %}
+            {% if  track.name in trackFilter %}
+            tmp.push("{{ track.name }}")
+            {% endif %}
+            {% endfor %}
+            tracksByCountry["{{ country.name }}"] = tmp
+            {% endfor %}
+
+            let carsByCategory = {}
+            {% for category in categories %}
+            tmp = []
+            {% for car in category.cars %}
+            tmp.push("{{ car.maker.name ~ " " ~ car.name }}")
+            {% endfor %}
+            carsByCategory["{{ category.name }}"] = tmp
+            {% endfor %}
+
+            function startLottery() {
+                let now = new Date()
+                let stopAt = now.getTime() + delay * 1000
+                let instance = 1;
+                let countriesAlreadySelected = []
+                let categoriesAlreadySelected = []
+                countrySelect(stopAt)
+
+                function trackSelect(stopAt, country) {
+                    let current = new Date()
+                    if (current.getTime() > stopAt) {
+                        stopAt += delay * 1000
+                        categorySelect(stopAt)
+                    } else {
+                        setTimeout(() => {
+                            $('#track-' + instance).text(tracksByCountry[country][Math.floor(Math.random() * tracksByCountry[country].length)])
+                            trackSelect(stopAt, country)
+                        }, refresh)
+                    }
+                }
+
+                function carSelect(stopAt, category) {
+                    let current = new Date()
+                    if (current.getTime() < stopAt) {
+                        setTimeout(() => {
+                            $('#car-' + instance).text(carsByCategory[category][Math.floor(Math.random() * carsByCategory[category].length)])
+                            carSelect(stopAt, category)
+                        }, refresh)
+                    } else if (instance <= nbRaces) {
+                        instance++
+                        countrySelect(stopAt += delay * 1000)
+                    }
+                }
+
+                function categorySelect(stopAt, selected = null) {
+                    let current = new Date()
+                    if (current.getTime() > stopAt) {
+                        stopAt += delay * 1000
+                        categoriesAlreadySelected.push(selected)
+                        console.log(categoriesAlreadySelected)
+                        carSelect(stopAt, selected)
+                    } else {
+                        setTimeout(() => {
+                            let i = randomNotUsed(categories, categoriesAlreadySelected)
+                            selected = categories[i]
+                            $('#category-' + instance).text(selected)
+                            categorySelect(stopAt, selected)
+                        }, refresh)
+                    }
+                }
+
+                function countrySelect(stopAt, selected = null) {
+                    let current = new Date()
+                    if (current.getTime() > stopAt) {
+                        stopAt += delay * 1000
+                        countriesAlreadySelected.push(selected)
+                        console.log(countriesAlreadySelected)
+                        trackSelect(stopAt, selected)
+                    } else {
+                        setTimeout(() => {
+                            let i = randomNotUsed(countries, countriesAlreadySelected)
+                            selected = countries[i]
+                            $('#country-' + instance).text(selected)
+                            countrySelect(stopAt, selected)
+                        }, refresh)
+                    }
+                }
+
+                function randomNotUsed(fullList, alreadyUsedList) {
+                    let randomIterator = Math.floor(Math.random() * fullList.length)
+                    if (alreadyUsedList.includes(fullList[randomIterator])) {
+                        return randomNotUsed(fullList, alreadyUsedList)
+                    }
+                    return randomIterator
+                }
+            }
+
+            $('#start').on('click', () => {
+                startLottery()
+            })
+        })
+    </script>
+{% endblock %}

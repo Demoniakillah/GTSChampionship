@@ -7,7 +7,6 @@
     <tr>
         <th>name</th>
         <th>priority</th>
-        <th>points table</th>
         <th></th>
     </tr>
     </thead>
@@ -16,24 +15,6 @@
         <tr class="pool_data" data-pool="{{ pool.id }}">
             <td>{{ pool.name }}</td>
             <td>{{ pool.priority }}</td>
-            <td>
-                <table class="table table-striped">
-                    <thead>
-                    <tr>
-                        <th>positions</th>
-                        {% for points in pool.points %}
-                            <th>{{ loop.index }}</th>
-                        {% endfor %}
-                    </tr>
-                    </thead>
-                    <tr>
-                        <th>points</th>
-                        {% for points in pool.points %}
-                            <th>{{ points }}</th>
-                        {% endfor %}
-                    </tr>
-                </table>
-            </td>
             <td>
                 <a class="remove_element bi bi-trash text-danger" data-token="{{ csrf_token('delete'~pool.id) }}"
                    style="float: right" data-remove_url="{{ path('pool_delete',{'id':pool.id}) }}"></a>

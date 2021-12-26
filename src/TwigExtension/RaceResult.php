@@ -145,7 +145,7 @@ class RaceResult extends AbstractExtension
                             }
                         }
                         if (isset($output['nb_race'][$psn])) {
-                            $output['nb_race'][$psn] += 1;
+                            ++$output['nb_race'][$psn];
                         } else {
                             $output['nb_race'][$psn] = 1;
                         }
@@ -275,7 +275,7 @@ class RaceResult extends AbstractExtension
             $driverRaces = $driverRaces->toArray();
         }
         $driverRaces = array_filter($driverRaces, static function (DriverRace $a) {
-            return $a->getBestLap() !== '00:00:000' && $a->hasBeenValidated();
+            return $a->getBestLap() !== '00:00:00.000' && $a->hasBeenValidated();
         });
         usort($driverRaces, static function (DriverRace $a, DriverRace $b) {
             return (int)str_replace(':', '', $a->getBestLap()) > (int)str_replace(':', '', $b->getBestLap());
